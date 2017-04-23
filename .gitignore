@@ -54,3 +54,5 @@ config.cfg
 # shader files
 *.tmp
 
+*.filters
+*.vpc_crc
