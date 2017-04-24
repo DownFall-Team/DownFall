@@ -13,8 +13,8 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	".\hl2;.\hl2\elements;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\episodic;..\..\public;$BASE"
-		$PreprocessorDefinitions		"$BASE;HL2_CLIENT_DLL;HL2_EPISODIC"
+		$AdditionalIncludeDirectories	".\hl2;.\downfall;.\hl2\elements;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\downfall;$SRCDIR\game\shared\episodic;..\..\public;$BASE"
+		$PreprocessorDefinitions		"$BASE;HL2_CLIENT_DLL;DOWNFALL;HL2_EPISODIC"
 	}
 }
 

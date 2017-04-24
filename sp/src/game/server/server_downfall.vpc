@@ -13,8 +13,8 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\episodic;.\hl2;.\episodic"
-		$PreprocessorDefinitions		"$BASE;HL2_DLL;HL2_EPISODIC;USES_SAVERESTORE"
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\episodic;$SRCDIR\game\shared\downfall;.\downfall;.\hl2;.\episodic"
+		$PreprocessorDefinitions		"$BASE;HL2_DLL;DOWNFALL;HL2_EPISODIC;USES_SAVERESTORE"
 	}
 }
 
@@ -46,6 +46,11 @@ $Project "Server (Downfall)"
 		$File	"vehicle_choreo_generic.cpp"
 		$File	"$SRCDIR\game\shared\vehicle_choreo_generic_shared.h"
 		$File	"$SRCDIR\game\shared\weapon_parse_default.cpp"
+
+		$Folder "Downfall"
+		{
+			$File	"downfall\trigger_gunfire.cpp"
+		}
 
 		$Folder	"HL2 DLL"
 		{
