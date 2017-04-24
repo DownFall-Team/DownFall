@@ -20,6 +20,12 @@
 #include "coordsize.h"
 #include "vphysics/performance.h"
 
+#ifdef GAME_DLL
+#ifdef DOWNFALL
+#include "trigger_gunfire.h"
+#endif
+#endif
+
 #ifdef CLIENT_DLL
 	#include "c_te_effect_dispatch.h"
 #else
@@ -38,7 +44,9 @@
 
 #endif
 
-#ifdef HL2_EPISODIC
+#if defined(DOWNFALL)
+ConVar hl2_episodic("hl2_episodic", "1", FCVAR_DEVELOPMENTONLY );
+#elif defined(HL2_EPISODIC)
 ConVar hl2_episodic( "hl2_episodic", "1", FCVAR_REPLICATED );
 #else
 ConVar hl2_episodic( "hl2_episodic", "0", FCVAR_REPLICATED );
@@ -1569,17 +1577,20 @@ Go to the trouble of combining multiple pellets into a single damage call.
 class CBulletsTraceFilter : public CTraceFilterSimpleList
 {
 public:
-	CBulletsTraceFilter( int collisionGroup ) : CTraceFilterSimpleList( collisionGroup ) {}
+	CBulletsTraceFilter( int collisionGroup ) 
+		: CTraceFilterSimpleList( collisionGroup )
+	{}
 
 	bool ShouldHitEntity( IHandleEntity *pHandleEntity, int contentsMask )
 	{
-		if ( m_PassEntities.Count() )
+		if (m_PassEntities.Count())
 		{
-			CBaseEntity *pEntity = EntityFromEntityHandle( pHandleEntity );
-			CBaseEntity *pPassEntity = EntityFromEntityHandle( m_PassEntities[0] );
-			if ( pEntity && pPassEntity && pEntity->GetOwnerEntity() == pPassEntity && 
-				pPassEntity->IsSolidFlagSet(FSOLID_NOT_SOLID) && pPassEntity->IsSolidFlagSet( FSOLID_CUSTOMBOXTEST ) && 
-				pPassEntity->IsSolidFlagSet( FSOLID_CUSTOMRAYTEST ) )
+			CBaseEntity *pEntity = EntityFromEntityHandle(pHandleEntity);
+			CBaseEntity *pPassEntity = EntityFromEntityHandle(m_PassEntities[0]);
+
+			if (pEntity && pPassEntity && pEntity->GetOwnerEntity() == pPassEntity &&
+				pPassEntity->IsSolidFlagSet(FSOLID_NOT_SOLID) && pPassEntity->IsSolidFlagSet(FSOLID_CUSTOMBOXTEST) &&
+				pPassEntity->IsSolidFlagSet(FSOLID_CUSTOMRAYTEST))
 			{
 				// It's a bone follower of the entity to ignore (toml 8/3/2007)
 				return false;
@@ -1587,7 +1598,6 @@ public:
 		}
 		return CTraceFilterSimpleList::ShouldHitEntity( pHandleEntity, contentsMask );
 	}
-
 };
 #else
 typedef CTraceFilterSimpleList CBulletsTraceFilter;
@@ -1820,6 +1830,26 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 #endif //#ifdef GAME_DLL
 			bHitWater = true;
 		}
+
+#ifdef GAME_DLL
+#ifdef DOWNFALL
+		trace_t		gunfireTr;
+
+		auto& gfTriggers = GetGunFireTriggers();
+		FOR_EACH_VEC(gfTriggers, i)
+		{
+			CTriggerGunFire* trigger = gfTriggers[i];
+
+			if (IsPlayer() && info.m_iShots > 1 && iShot % 2)
+				UTIL_TraceModel(info.m_vecSrc, vecEnd, Vector(-3, -3, -3), Vector(3, 3, 3), trigger, COLLISION_GROUP_NONE, &gunfireTr); // Shotgun
+			else
+				UTIL_TraceModel(info.m_vecSrc, vecEnd, Vector(0, 0, 0), Vector(0, 0, 0), trigger, COLLISION_GROUP_NONE, &gunfireTr);
+
+			if (gunfireTr.DidHit())
+				trigger->RecieveGunfire(this);
+		}
+#endif
+#endif
 
 		// Now hit all triggers along the ray that respond to shots...
 		// Clip the ray to the first collided solid returned from traceline

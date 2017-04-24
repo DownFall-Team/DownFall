@@ -110,9 +110,31 @@ END_SEND_TABLE()
 // Singleton to fire TEExplosion objects
 static CTEExplosion g_TEExplosion( "Explosion" );
 
+#ifdef DOWNFALL
+#include "trigger_gunfire.h"
+#endif
+
 void TE_Explosion( IRecipientFilter& filter, float delay,
 	const Vector* pos, int modelindex, float scale, int framerate, int flags, int radius, int magnitude, const Vector* normal, unsigned char materialType )
 {
+#ifdef DOWNFALL
+	int purposeRadius = radius;
+
+	if (purposeRadius == 0)
+		purposeRadius = 32;
+
+	CBaseEntity* ppEnts[256];
+	int nEntCount = UTIL_EntitiesInSphere(ppEnts, 256, *pos, purposeRadius, 0);
+
+	for (int i = 0; i < nEntCount; i++)
+	{
+		CTriggerGunFire* trigger = dynamic_cast<CTriggerGunFire*>(ppEnts[i]);
+		
+		if (trigger)
+			trigger->RecieveExplosion(NULL);
+	}
+#endif
+
 	g_TEExplosion.m_vecOrigin		= *pos;
 	g_TEExplosion.m_nModelIndex		= modelindex;	
 	g_TEExplosion.m_fScale			= scale;

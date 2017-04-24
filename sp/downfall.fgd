@@ -1,0 +1,14 @@
+//=============================================================================
+//
+// Purpose: Downfall fgd
+//
+//=============================================================================
+
+@include "halflife2.fgd"
+
+@SolidClass base(Trigger) = trigger_gunfire :
+	"A volumetric trigger that triggers whenever a gun is fired within it or a bullet passes through it with additional options for explosion reception."
+[
+	output OnGunfire(void) : "Fires when any gunfire is within its bounds."
+	output OnExplosion(void) : "Fires when any explosion is within its bounds."
+]

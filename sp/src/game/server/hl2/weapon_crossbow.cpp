@@ -25,6 +25,10 @@
 #include "gamestats.h"
 #include "decals.h"
 
+#ifdef DOWNFALL
+#include "trigger_gunfire.h"
+#endif
+
 #ifdef PORTAL
 	#include "portal_util_shared.h"
 #endif
@@ -198,6 +202,11 @@ void CCrossbowBolt::Precache( void )
 //-----------------------------------------------------------------------------
 void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 {
+#ifdef DOWNFALL
+	if (FClassnameIs(pOther, "trigger_gunfire"))
+		dynamic_cast<CTriggerGunFire*>(pOther)->RecieveGunfire(this);
+#endif
+
 	if ( pOther->IsSolidFlagSet(FSOLID_VOLUME_CONTENTS | FSOLID_TRIGGER) )
 	{
 		// Some NPCs are triggers that can take damage (like antlion grubs). We should hit them.
