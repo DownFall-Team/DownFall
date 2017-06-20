@@ -74,8 +74,7 @@
 #include "c_point_camera.h"
 #endif // USE_MONITORS
 
-// Projective textures
-#include "C_Env_Projected_Texture.h"
+#include "c_func_water_analog.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2553,8 +2552,9 @@ void CViewRender::DrawWorldAndEntities( bool bDrawSkybox, const CViewSetup &view
 
 	WaterRenderInfo_t info;
 	DetermineWaterRenderInfo( fogVolumeInfo, info );
+	bool inWaterAnalog = IsPointInWaterAnalog( viewIn.origin );
 
-	if ( info.m_bCheapWater )
+	if ( info.m_bCheapWater && !inWaterAnalog )
 	{		     
 		tmZone( TELEMETRY_LEVEL0, TMZF_NONE, "bCheapWater" );
 		cplane_t glassReflectionPlane;
