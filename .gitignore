@@ -56,3 +56,15 @@ config.cfg
 
 *.filters
 *.vpc_crc
+/sp/src/game/client/Debug_downfall
+/sp/src/game/server/Debug_downfall
+/sp/game/mod_episodic/bin
+/sp/src/.vs/games/v15
+/sp/src/game/server/server_downfall.vpc.sentinel
+/sp/src/game/client/client_downfall.vpc.sentinel
+/sp/src/materialsystem/stdshaders/Debug_dx9_mod_episodic
+/sp/src/materialsystem/stdshaders/game_shader_dx9_episodic.vpc.sentinel
+/sp/src/mathlib
+/sp/src/raytrace
+/sp/src/tier1
+/sp/src/vgui2/vgui_controls

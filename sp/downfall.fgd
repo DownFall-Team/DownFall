@@ -12,3 +12,72 @@
 	output OnGunfire(void) : "Fires when any gunfire is within its bounds."
 	output OnExplosion(void) : "Fires when any explosion is within its bounds."
 ]
+
+@PointClass base(Targetname, Parentname, Angles) studioprop("models/editor/spot.mdl") frustum(lightfov,nearz,farz,lightcolor,-1) = env_projectedtexture : 
+	"Projected texture entity."
+[
+	spawnflags(flags) =
+	[
+		1  : "Enabled"				: 1
+		2  : "Volumetric lights"	: 0
+	]
+
+	target(target_destination)	: "target" : : "target"	
+	lightfov(float)				: "FOV" : "90.0" : "FOV"
+	nearz(float)				: "NearZ" : "4.0" : "Near Z for projected texture"
+	farz(float)					: "FarZ" : "750.0" : "Far Z for projected texture"	
+	
+	enableshadows(Choices) : "Enable Shadows" : 0 : "Enables/disables shadows from this projected texture." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	shadowquality(Choices) : "Shadow Quality" : 1 : "Quality of shadows." =
+	[
+		0 : "Low"
+		1 : "High"
+	]
+	lightonlytarget(Choices) : "Light Only Target" : 0 : "Limit flashlight effect to only effect target entity." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	lightworld(Choices) : "Light World" : 1 : "Control whether flashlight effects static world geometry." =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	volumetricslod(Choices) : "Volumetrics Lod" : 1 : "" =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	flicker(Choices) : "Flicker" : 0 : "" =
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	volumetricsfadedistance(float) 	: "Volumetrics fade distance" : 0 : ""
+	volumetricsqualitybias(float) 	: "Volumetrics quality bias" : 1 : ""
+	volumetricsmultiplier(float)	: "Volumetrics multiplier" : 2 : ""
+	volumetricsquality(integer) 	: "Volumetrics quality" : 20 : ""
+	
+	lightcolor(color255)			: "Light Color" : "255 255 255 200" : "Light Color RGB-Intensity"
+	cameraspace(integer)			: "Camera Space" : 0 : "Angles are interpreted as being relative to camera."
+	
+	texturename(material)				: "Texture name" : ""
+
+	// Inputs
+	input TurnOn(void)		: "Turn on the texture"
+	input TurnOff(void)		: "Turn off the texture"
+	input FOV(float)		: "Set FOV"
+	input Target(string)	: "Set Target"
+	input CameraSpace(bool)	: "Set CameraSpace"
+	input LightOnlyTarget(bool)	: "Set LightOnlyTarget"
+	input LightWorld(bool)	: "Set LightWorld"
+	input EnableShadows(bool)	: "Set EnableShadows"
+	input LightColor(string)	: "Set LightColor"
+	input Ambient(float)	: "Set Ambient"
+	input SpotlightTexture(string)	: "Set SpotlightTexture"
+	input EnableVolumetrics(bool)	: "Set EnableVolumetrics"
+]

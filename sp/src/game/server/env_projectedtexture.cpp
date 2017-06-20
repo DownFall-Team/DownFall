@@ -11,6 +11,7 @@
 #include "tier0/memdbgon.h"
 
 #define ENV_PROJECTEDTEXTURE_STARTON			(1<<0)
+#define ENV_PROJECTEDTEXTURE_VOLUMETRICS_START_ON		( 1 << 1 )
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -27,6 +28,7 @@ public:
 
 	// Always transmit to clients
 	virtual int UpdateTransmitState();
+	void Spawn( void );
 	virtual void Activate( void );
 
 	void InputTurnOn( inputdata_t &inputdata );
@@ -37,11 +39,13 @@ public:
 	void InputSetLightOnlyTarget( inputdata_t &inputdata );
 	void InputSetLightWorld( inputdata_t &inputdata );
 	void InputSetEnableShadows( inputdata_t &inputdata );
-//	void InputSetLightColor( inputdata_t &inputdata );
+	void InputSetLightColor( inputdata_t &inputdata );
 	void InputSetSpotlightTexture( inputdata_t &inputdata );
 	void InputSetAmbient( inputdata_t &inputdata );
+	void InputSetEnableVolumetrics( inputdata_t &inputdata );
 
 	void InitialThink( void );
+	void FlickerThink( void );
 
 	CNetworkHandle( CBaseEntity, m_hTargetEntity );
 
@@ -54,12 +58,20 @@ private:
 	CNetworkVar( bool, m_bLightWorld );
 	CNetworkVar( bool, m_bCameraSpace );
 	CNetworkVector( m_LinearFloatLightColor );
+	Vector m_LinearFloatLightColorCopy;
 	CNetworkVar( float, m_flAmbient );
 	CNetworkString( m_SpotlightTextureName, MAX_PATH );
 	CNetworkVar( int, m_nSpotlightTextureFrame );
 	CNetworkVar( float, m_flNearZ );
 	CNetworkVar( float, m_flFarZ );
 	CNetworkVar( int, m_nShadowQuality );
+	CNetworkVar( bool, m_bFlicker );
+	CNetworkVar( bool, m_bEnableVolumetrics );
+	CNetworkVar( bool, m_bEnableVolumetricsLOD );
+	CNetworkVar( float, m_flVolumetricsFadeDistance );
+	CNetworkVar( int, m_iVolumetricsQuality );
+	CNetworkVar( float, m_flVolumetricsQualityBias );
+	CNetworkVar( float, m_flVolumetricsMultiplier );
 };
 
 LINK_ENTITY_TO_CLASS( env_projectedtexture, CEnvProjectedTexture );
@@ -73,12 +85,13 @@ BEGIN_DATADESC( CEnvProjectedTexture )
 	DEFINE_KEYFIELD( m_bLightWorld, FIELD_BOOLEAN, "lightworld" ),
 	DEFINE_KEYFIELD( m_bCameraSpace, FIELD_BOOLEAN, "cameraspace" ),
 	DEFINE_KEYFIELD( m_flAmbient, FIELD_FLOAT, "ambient" ),
+	DEFINE_KEYFIELD( m_bFlicker, FIELD_BOOLEAN, "flicker" ),
 	DEFINE_AUTO_ARRAY( m_SpotlightTextureName, FIELD_CHARACTER ),
 	DEFINE_KEYFIELD( m_nSpotlightTextureFrame, FIELD_INTEGER, "textureframe" ),
 	DEFINE_KEYFIELD( m_flNearZ, FIELD_FLOAT, "nearz" ),
 	DEFINE_KEYFIELD( m_flFarZ, FIELD_FLOAT, "farz" ),
 	DEFINE_KEYFIELD( m_nShadowQuality, FIELD_INTEGER, "shadowquality" ),
-	DEFINE_FIELD( m_LinearFloatLightColor, FIELD_VECTOR ), 
+	DEFINE_FIELD( m_LinearFloatLightColor, FIELD_VECTOR ),
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "TurnOn", InputTurnOn ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "TurnOff", InputTurnOff ),
@@ -89,10 +102,20 @@ BEGIN_DATADESC( CEnvProjectedTexture )
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "LightWorld", InputSetLightWorld ),
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "EnableShadows", InputSetEnableShadows ),
 	// this is broken . . need to be able to set color and intensity like light_dynamic
-//	DEFINE_INPUTFUNC( FIELD_COLOR32, "LightColor", InputSetLightColor ),
+	DEFINE_INPUTFUNC( FIELD_STRING, "LightColor", InputSetLightColor ),
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "Ambient", InputSetAmbient ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "SpotlightTexture", InputSetSpotlightTexture ),
 	DEFINE_THINKFUNC( InitialThink ),
+	DEFINE_THINKFUNC( FlickerThink ),
+
+	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "EnableVolumetrics", InputSetEnableVolumetrics ),
+
+	DEFINE_FIELD( m_bEnableVolumetrics, FIELD_BOOLEAN ),
+	DEFINE_KEYFIELD( m_bEnableVolumetricsLOD, FIELD_BOOLEAN, "volumetricslod" ),
+	DEFINE_KEYFIELD( m_flVolumetricsFadeDistance, FIELD_FLOAT, "volumetricsfadedistance" ),
+	DEFINE_KEYFIELD( m_iVolumetricsQuality, FIELD_INTEGER, "volumetricsquality" ),
+	DEFINE_KEYFIELD( m_flVolumetricsQualityBias, FIELD_FLOAT, "volumetricsqualitybias" ),
+	DEFINE_KEYFIELD( m_flVolumetricsMultiplier, FIELD_FLOAT, "volumetricsmultiplier" ),
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST( CEnvProjectedTexture, DT_EnvProjectedTexture )
@@ -107,9 +130,15 @@ IMPLEMENT_SERVERCLASS_ST( CEnvProjectedTexture, DT_EnvProjectedTexture )
 	SendPropFloat( SENDINFO( m_flAmbient ) ),
 	SendPropString( SENDINFO( m_SpotlightTextureName ) ),
 	SendPropInt( SENDINFO( m_nSpotlightTextureFrame ) ),
-	SendPropFloat( SENDINFO( m_flNearZ ), 16, SPROP_ROUNDDOWN, 0.0f,  500.0f ),
-	SendPropFloat( SENDINFO( m_flFarZ ),  18, SPROP_ROUNDDOWN, 0.0f, 1500.0f ),
+	SendPropFloat( SENDINFO( m_flNearZ ), 16, SPROP_ROUNDDOWN, 0.0f, 500.0f ),
+	SendPropFloat( SENDINFO( m_flFarZ ), 18, SPROP_ROUNDDOWN, 0.0f, 1500.0f ),
 	SendPropInt( SENDINFO( m_nShadowQuality ), 1, SPROP_UNSIGNED ),  // Just one bit for now
+	SendPropBool( SENDINFO( m_bEnableVolumetrics ) ),
+	SendPropBool( SENDINFO( m_bEnableVolumetricsLOD ) ),
+	SendPropFloat( SENDINFO( m_flVolumetricsFadeDistance ) ),
+	SendPropInt( SENDINFO( m_iVolumetricsQuality ) ),
+	SendPropFloat( SENDINFO( m_flVolumetricsQualityBias ) ),
+	SendPropFloat( SENDINFO( m_flVolumetricsMultiplier ) ),
 END_SEND_TABLE()
 
 //-----------------------------------------------------------------------------
@@ -143,7 +172,7 @@ void UTIL_ColorStringToLinearFloatColor( Vector &color, const char *pString )
 {
 	float tmp[4];
 	UTIL_StringToFloatArray( tmp, 4, pString );
-	if( tmp[3] <= 0.0f )
+	if ( tmp[3] <= 0.0f )
 	{
 		tmp[3] = 255.0f;
 	}
@@ -163,7 +192,15 @@ bool CEnvProjectedTexture::KeyValue( const char *szKeyName, const char *szValue 
 	}
 	else if ( FStrEq(szKeyName, "texturename" ) )
 	{
-		Q_strcpy( m_SpotlightTextureName.GetForModify(), szValue );
+		if ( !szValue || Q_strlen( szValue ) < 1 )
+		{
+			// If we have no texture defined use a default texture
+			Q_strcpy( m_SpotlightTextureName.GetForModify(), "effects/flashlight001" );
+		}
+		else
+		{
+			Q_strcpy( m_SpotlightTextureName.GetForModify(), szValue );
+		}
 	}
 	else
 	{
@@ -213,10 +250,13 @@ void CEnvProjectedTexture::InputSetEnableShadows( inputdata_t &inputdata )
 	m_bEnableShadows = inputdata.value.Bool();
 }
 
-//void CEnvProjectedTexture::InputSetLightColor( inputdata_t &inputdata )
-//{
-//	m_cLightColor = inputdata.value.Color32();
-//}
+void CEnvProjectedTexture::InputSetLightColor( inputdata_t &inputdata )
+{
+	Vector tmp;
+	UTIL_ColorStringToLinearFloatColor( tmp, inputdata.value.String() );
+	// DevMsg( "vCLR.x: %f\n", tmp.x );
+	m_LinearFloatLightColor = tmp;
+}
 
 void CEnvProjectedTexture::InputSetAmbient( inputdata_t &inputdata )
 {
@@ -228,15 +268,17 @@ void CEnvProjectedTexture::InputSetSpotlightTexture( inputdata_t &inputdata )
 	Q_strcpy( m_SpotlightTextureName.GetForModify(), inputdata.value.String() );
 }
 
+void CEnvProjectedTexture::Spawn( void )
+{
+	m_bState = HasSpawnFlags( ENV_PROJECTEDTEXTURE_STARTON );
+	m_bEnableVolumetrics = HasSpawnFlags( ENV_PROJECTEDTEXTURE_VOLUMETRICS_START_ON );
+				  
+}
+
 void CEnvProjectedTexture::Activate( void )
 {
-	if ( GetSpawnFlags() & ENV_PROJECTEDTEXTURE_STARTON )
-	{
-		m_bState = true;
-	}
-
 	SetThink( &CEnvProjectedTexture::InitialThink );
-	SetNextThink( gpGlobals->curtime + 0.1f );
+	SetNextThink( gpGlobals->curtime + 0.1 );
 
 	BaseClass::Activate();
 }
@@ -247,13 +289,33 @@ void CEnvProjectedTexture::InitialThink( void )
 		m_hTargetEntity = gEntList.FindEntityByName( NULL, m_target );
 	if ( m_hTargetEntity == NULL )
 		return;
- 
+
 	Vector vecToTarget = (m_hTargetEntity->GetAbsOrigin() - GetAbsOrigin());
 	QAngle vecAngles;
 	VectorAngles( vecToTarget, vecAngles );
 	SetAbsAngles( vecAngles );
- 
-	SetNextThink( gpGlobals->curtime + 0.1 );
+
+	if ( m_bFlicker )
+	{
+		DevMsg( "CEnvProjectedTexture::InitialThink: m_bFlicker..\n" );
+		m_LinearFloatLightColorCopy = m_LinearFloatLightColor;
+		SetThink( &CEnvProjectedTexture::FlickerThink );
+		SetNextThink( gpGlobals->curtime + 0.05 );
+	}
+	else
+		SetNextThink( gpGlobals->curtime + 0.1 );
+}
+
+void CEnvProjectedTexture::FlickerThink( void )
+{
+	float flNoise = 0.75 + ( 0.25 * ( cosf( gpGlobals->curtime * 7.0 ) * sinf( gpGlobals->curtime * 25.0 ) ) );
+	m_LinearFloatLightColor = m_LinearFloatLightColorCopy * flNoise;
+
+	if ( m_bFlicker )
+	{
+		SetThink( &CEnvProjectedTexture::FlickerThink );
+		SetNextThink( gpGlobals->curtime + 0.05 );
+	}
 }
 
 int CEnvProjectedTexture::UpdateTransmitState()
@@ -261,6 +323,10 @@ int CEnvProjectedTexture::UpdateTransmitState()
 	return SetTransmitState( FL_EDICT_ALWAYS );
 }
 
+void CEnvProjectedTexture::InputSetEnableVolumetrics( inputdata_t &inputdata )
+{
+	m_bEnableVolumetrics = inputdata.value.Bool();
+}
 
 // Console command for creating env_projectedtexture entities
 void CC_CreateFlashlight( const CCommand &args )
@@ -270,7 +336,7 @@ void CC_CreateFlashlight( const CCommand &args )
 		return;
 
 	QAngle angles = pPlayer->EyeAngles();
-	Vector origin = pPlayer->EyePosition();		
+	Vector origin = pPlayer->EyePosition();
 
 	CEnvProjectedTexture *pFlashlight = dynamic_cast< CEnvProjectedTexture * >( CreateEntityByName("env_projectedtexture") );
 	if( args.ArgC() > 1 )
