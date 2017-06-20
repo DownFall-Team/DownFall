@@ -24,21 +24,10 @@
 LINK_ENTITY_TO_CLASS( func_movelinear, CFuncMoveLinear );
 LINK_ENTITY_TO_CLASS( momentary_door, CFuncMoveLinear );	// For backward compatibility
 
-
-class CFuncMoveLinearWater : public CFuncMoveLinear
-{
-	DECLARE_CLASS( CFuncMoveLinearWater, CFuncMoveLinear )
-public:
-	DECLARE_SERVERCLASS()
-};
-
-IMPLEMENT_SERVERCLASS_ST( CFuncMoveLinearWater, DT_WaterAnalog )
-END_SEND_TABLE()
-
 //
 // func_water_analog is implemented as a linear mover so we can raise/lower the water level.
 //
-LINK_ENTITY_TO_CLASS( func_water_analog, CFuncMoveLinearWater );
+LINK_ENTITY_TO_CLASS( func_water_analog, CFuncMoveLinear );
 
 
 BEGIN_DATADESC( CFuncMoveLinear )
