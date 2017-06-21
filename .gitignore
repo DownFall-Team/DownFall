@@ -68,3 +68,4 @@ config.cfg
 /sp/src/raytrace
 /sp/src/tier1
 /sp/src/vgui2/vgui_controls
+/.vs

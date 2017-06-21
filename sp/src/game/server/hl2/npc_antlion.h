@@ -67,6 +67,7 @@ enum AntlionMoveState_e
 #define	SF_ANTLION_BURROW_ON_ELUDED		( 1 << 16 )
 #define	SF_ANTLION_USE_GROUNDCHECKS		( 1 << 17 )
 #define	SF_ANTLION_WORKER				( 1 << 18 ) // Use the "worker" model
+#define	SF_ANTLION_WORKER_KAMIKAZE		( 1 << 19 )
 
 typedef CAI_BlendingHost< CAI_BehaviorHost<CAI_BlendedNPC> > CAI_BaseAntlionBase;
 
