@@ -1,1 +1,0 @@
-..\..\..\game\hl2\shaders\fxc\vertexlit_and_unlit_generic_treesway_vs30.vcs
