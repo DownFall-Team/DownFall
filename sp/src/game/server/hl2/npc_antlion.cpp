@@ -2418,7 +2418,7 @@ int CNPC_Antlion::SelectSchedule( void )
 	case NPC_STATE_COMBAT:
 		{
 			// Worker-only AI
-			if ( hl2_episodic.GetBool() && IsWorker() )
+			if ( hl2_episodic.GetBool() && IsWorker() && !HasSpawnFlags( SF_ANTLION_WORKER_KAMIKAZE ) )
 			{
 				// Melee attack if we can
 				if ( HasCondition( COND_CAN_MELEE_ATTACK1 ) )

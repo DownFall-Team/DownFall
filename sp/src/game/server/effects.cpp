@@ -1539,11 +1539,7 @@ public:
 	DECLARE_SERVERCLASS();
 
 private:
-#ifdef POSIX
-	CEnvWindShared m_EnvWindShared; // FIXME - fails to compile as networked var due to operator= problem
-#else
 	CNetworkVarEmbedded( CEnvWindShared, m_EnvWindShared );
-#endif
 };
 
 LINK_ENTITY_TO_CLASS( env_wind, CEnvWind );
@@ -1615,7 +1611,8 @@ void CEnvWind::Spawn( void )
 	SetSolid( SOLID_NONE );
 	AddEffects( EF_NODRAW );
 
-	m_EnvWindShared.Init( entindex(), 0, gpGlobals->frametime, GetLocalAngles().y, 0 );
+	m_EnvWindShared.m_iInitialWindDir = (int)( anglemod( m_EnvWindShared.m_iInitialWindDir ) );
+	m_EnvWindShared.Init( entindex(), 0, gpGlobals->curtime, GetLocalAngles().y, 0 );
 
 	SetThink( &CEnvWind::WindThink );
 	SetNextThink( gpGlobals->curtime );
