@@ -837,7 +837,7 @@ const char *CBaseVSShader::UnlitGeneric_ComputePixelShaderName( bool bMask,
 		return s_pPixelShaders[pshIndex];
 	}
 }
-
+#endif
 
 //-----------------------------------------------------------------------------
 // Sets up hw morphing state for the vertex shader
@@ -866,7 +866,7 @@ void CBaseVSShader::SetHWMorphVertexShaderState( int nDimConst, int nSubrectCons
 #endif
 }
 
-
+#ifndef GAME_SHADER_DLL
 //-----------------------------------------------------------------------------
 // Vertex shader unlit generic pass
 //-----------------------------------------------------------------------------
