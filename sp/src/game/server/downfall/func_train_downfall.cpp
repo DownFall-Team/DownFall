@@ -1,6 +1,8 @@
 #include "cbase.h"
 #include "func_train_downfall.h"
 
+extern void FixupAngles(QAngle &v);
+
 LINK_ENTITY_TO_CLASS(func_train_downfall, CFuncTrainDownfall);
 
 BEGIN_DATADESC(CFuncTrainDownfall)
@@ -71,6 +73,48 @@ void CFuncTrainDownfall::Stop(void)
 void CFuncTrainDownfall::SetSpeed(float flSpeed, bool bAccel)
 {
 	BaseClass::SetSpeed(flSpeed, true); // Always accelerate, never snap to a speed!
+}
+
+void CFuncTrainDownfall::UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval)
+{
+	if (!m_ppath)
+		return;
+
+	CPathTrack *pNextNode = NULL;
+	CPathTrack *pPrevNode = NULL;
+
+	Vector nextFront = GetLocalOrigin();
+	Vector prevFront = GetLocalOrigin();
+
+	nextFront.z -= m_height;
+	if (m_length > 0)
+	{
+		m_ppath->LookAhead(nextFront, IsDirForward() ? m_length : -m_length, 0, &pNextNode);
+		m_ppath->LookAhead(prevFront, IsDirForward() ? -m_length : m_length, 0, &pPrevNode);
+	}
+	else
+	{
+		m_ppath->LookAhead(nextFront, IsDirForward() ? 100 : -100, 0, &pNextNode);
+		m_ppath->LookAhead(prevFront, IsDirForward() ? -100 : 100, 0, &pPrevNode);
+	}
+	nextFront.z += m_height;
+
+
+	Vector vecFaceDir;
+
+	if (IsDirForward())
+		vecFaceDir = nextFront - GetLocalOrigin();
+	else
+		vecFaceDir = prevFront - GetLocalOrigin();
+
+	QAngle angles;
+	VectorAngles(vecFaceDir, angles);
+	FixupAngles(angles);
+
+	QAngle curAngles = GetLocalAngles();
+	FixupAngles(curAngles);
+
+	DoUpdateOrientation(curAngles, angles, flInterval);
 }
 
 bool CFuncTrainDownfall::OnControls(CBaseEntity* pControls)

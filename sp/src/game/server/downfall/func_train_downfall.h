@@ -24,6 +24,8 @@ public:
 	virtual void Stop(void);
 	virtual void SetSpeed(float flSpeed, bool bAccel = false);
 
+	virtual void UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval);
+
 	virtual bool OnControls(CBaseEntity *pControls);
 	inline bool CanBeControlled()
 	{
