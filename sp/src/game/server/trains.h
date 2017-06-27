@@ -94,7 +94,11 @@ public:
 	void SoundUpdate( void );
 
 	void Start( void );
-	void Stop( void );
+#ifdef DOWNFALL
+	virtual void Stop( void );
+#else
+	void Stop(void);
+#endif
 
 	bool IsDirForward();
 	void SetDirForward( bool bForward );
