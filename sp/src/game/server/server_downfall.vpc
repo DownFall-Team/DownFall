@@ -50,6 +50,8 @@ $Project "Server (Downfall)"
 		$Folder "Downfall"
 		{
 			$File	"downfall\trigger_gunfire.cpp"
+			$File	"downfall\func_train_downfall.h"
+			$File	"downfall\func_train_downfall.cpp"
 		}
 
 		$Folder	"HL2 DLL"

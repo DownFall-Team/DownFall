@@ -81,3 +81,15 @@
 	input SpotlightTexture(string)	: "Set SpotlightTexture"
 	input EnableVolumetrics(bool)	: "Set EnableVolumetrics"
 ]
+
+@SolidClass base(func_tracktrain) = func_train_downfall :
+	"A moving platform that the player can ride. It follows a path of path_track entities.\n" +
+	"NOTE: Build your train so that the front of the train is facing down the X axis. " +
+	"When it spawns it will automatically rotate to face the next path_track on the path."
+[
+	input ApplyBrakes(float) : "Apply the brakes of the train. Given float is time to stop."
+	input DisableControls(void) : "Disable control of the train."
+	input EnableControls(void) : "Enable control of the train."
+	input SetManualAccelSpeed(float) : "Set the speed the train accelerates at."
+	input SetManualDecelSpeed(float) : "Set the speed the train accelerates at."
+]
