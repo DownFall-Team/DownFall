@@ -84,7 +84,11 @@ public:
 
 	void SetTrack( CPathTrack *track ) { m_ppath = track->Nearest(GetLocalOrigin()); }
 	void SetControls( CBaseEntity *pControls );
-	bool OnControls( CBaseEntity *pControls );
+#ifdef DOWNFALL
+	virtual bool OnControls( CBaseEntity *pControls );
+#else
+	bool OnControls(CBaseEntity *pControls);
+#endif
 
 	void SoundStop( void );
 	void SoundUpdate( void );
@@ -94,7 +98,11 @@ public:
 
 	bool IsDirForward();
 	void SetDirForward( bool bForward );
-	void SetSpeed( float flSpeed, bool bAccel = false );
+#ifdef DOWNFALL
+	virtual void SetSpeed( float flSpeed, bool bAccel = false );
+#else
+	void SetSpeed(float flSpeed, bool bAccel = false);
+#endif
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void SetSpeedDirAccel( float flNewSpeed );
 	
@@ -153,7 +161,11 @@ public:
 										// riding on a func_trackchange
 #endif
 
+#ifdef DOWNFALL
+protected:
+#else
 private:
+#endif
 
 	TrainVelocityType_t GetTrainVelocityType();
 	void UpdateTrainVelocity( CPathTrack *pnext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval );
