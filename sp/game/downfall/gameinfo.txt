@@ -36,6 +36,9 @@
 			gamebin					downfall/bin
 
 			// Last, mount in shared HL2 loose files
+			game					|gameinfo_path|../hl2
+			platform				|gameinfo_path|../platform
+			
 			game					|all_source_engine_paths|hl2
 			platform				|all_source_engine_paths|platform
 		}
