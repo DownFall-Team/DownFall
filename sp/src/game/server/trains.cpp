@@ -1580,7 +1580,11 @@ void CFuncTrackTrain::SetSpeed( float flSpeed, bool bAccel /*= false */  )
 
 		if ( m_flSpeed == 0 && abs(m_flDesiredSpeed) > 0 )
 		{
-			m_flSpeed = 0.1;	// little push to get us going
+#ifdef DOWNFALL
+			m_flSpeed = 0.1f * m_dir;	// little push to get us going
+#else
+			m_flSpeed = 0.1f;	// little push to get us going
+#endif
 		}
 
 		Start();

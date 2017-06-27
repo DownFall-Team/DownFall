@@ -62,6 +62,12 @@ void CFuncTrainDownfall::SetManualDecelSpeed(float flSpeed)
 	m_flDecelSpeed = flSpeed;
 }
 
+void CFuncTrainDownfall::Stop(void)
+{
+	SoundStop();
+	BaseClass::Stop();
+}
+
 void CFuncTrainDownfall::SetSpeed(float flSpeed, bool bAccel)
 {
 	BaseClass::SetSpeed(flSpeed, true); // Always accelerate, never snap to a speed!
