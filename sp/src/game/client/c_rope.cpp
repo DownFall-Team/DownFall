@@ -875,11 +875,9 @@ void C_RopeKeyframe::CPhysicsDelegate::GetNodeForces( CSimplePhysics::CNode *pNo
 
 	if( !m_pKeyframe->m_LinksTouchingSomething[iNode] && m_pKeyframe->m_bApplyWind)
 	{
-		Vector vecWindVel;
-		GetWindspeedAtTime(gpGlobals->curtime, vecWindVel);
+		const Vector& vecWindVel = GetWindspeedAtLocation( pNodes[iNode].m_vPos );
 		if ( vecWindVel.LengthSqr() > 0 )
 		{
-			Vector vecWindAccel;
 			VectorMA( *pAccel, WIND_FORCE_FACTOR, vecWindVel, *pAccel );
 		}
 		else

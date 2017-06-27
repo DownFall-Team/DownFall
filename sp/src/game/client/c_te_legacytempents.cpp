@@ -457,11 +457,10 @@ bool C_LocalTempEntity::Frame( float frametime, int framenumber )
 		
 		if ( traceFraction != 1  )	// Decent collision now, and damping works
 		{
-			float  proj, damp;
 			SetLocalOrigin( trace.endpos );
 			
 			// Damp velocity
-			damp = bounceFactor;
+			float damp = bounceFactor;
 			if ( flags & (FTENT_GRAVITY|FTENT_SLOWGRAVITY) )
 			{
 				damp *= 0.5;
@@ -554,7 +553,7 @@ bool C_LocalTempEntity::Frame( float frametime, int framenumber )
 				// Reflect velocity
 				if ( damp != 0 )
 				{
-					proj = ((Vector)m_vecTempEntVelocity).Dot(traceNormal);
+					float proj = m_vecTempEntVelocity.Dot(traceNormal);
 					VectorMA( m_vecTempEntVelocity, -proj*2, traceNormal, m_vecTempEntVelocity );
 					// Reflect rotation (fake)
 					SetLocalAnglesDim( Y_INDEX, -GetLocalAnglesDim( Y_INDEX ) );
@@ -597,8 +596,7 @@ bool C_LocalTempEntity::Frame( float frametime, int framenumber )
 
 	if ( flags & FTENT_WINDBLOWN )
 	{
-		Vector vecWind;
-		GetWindspeedAtTime( gpGlobals->curtime, vecWind );
+		const Vector &vecWind = GetWindspeedAtLocation( GetLocalOrigin() );
 
 		for ( int i = 0 ; i < 2 ; i++ )
 		{
