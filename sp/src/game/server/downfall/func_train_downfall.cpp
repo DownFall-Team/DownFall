@@ -87,6 +87,7 @@ void CFuncTrainDownfall::UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *p
 	Vector prevFront = GetLocalOrigin();
 
 	nextFront.z -= m_height;
+	prevFront.z -= m_height;
 	if (m_length > 0)
 	{
 		m_ppath->LookAhead(nextFront, IsDirForward() ? m_length : -m_length, 0, &pNextNode);
@@ -98,7 +99,7 @@ void CFuncTrainDownfall::UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *p
 		m_ppath->LookAhead(prevFront, IsDirForward() ? -100 : 100, 0, &pPrevNode);
 	}
 	nextFront.z += m_height;
-
+	prevFront.z += m_height;
 
 	Vector vecFaceDir;
 
