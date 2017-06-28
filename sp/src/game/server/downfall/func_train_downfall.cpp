@@ -156,7 +156,7 @@ void CFuncTrainDownfall::UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *p
 		vecAngVel.z = UTIL_AngleDistance(UTIL_ApproachAngle(wantedAngles.z, curAngles.z, m_flSpeed * sv_downfall_train_smoothness.GetFloat()), curAngles.z) * sv_downfall_train_smoothness.GetFloat();
 
 		SetLocalAngularVelocity(vecAngVel);
-		return
+		return;
 	}
 
 	if (!Q_strcmp(sv_downfall_train_smoothing_mode.GetString(), "quaternion_slerp"))
