@@ -21,12 +21,15 @@ public:
 	void SetManualAccelSpeed(float flSpeed);
 	void SetManualDecelSpeed(float flSpeed);
 
+	virtual void Stop(void);
 	virtual void SetSpeed(float flSpeed, bool bAccel = false);
+
+	virtual void UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval);
 
 	virtual bool OnControls(CBaseEntity *pControls);
 	inline bool CanBeControlled()
 	{
-		return (m_spawnflags & SF_TRACKTRAIN_NOCONTROL) != 0;
+		return (m_spawnflags & SF_TRACKTRAIN_NOCONTROL) == 0;
 	}
 };
 
