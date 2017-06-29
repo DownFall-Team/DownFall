@@ -178,14 +178,14 @@ void CFuncTrainDownfall::UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *p
 		float vy = UTIL_AngleDistance(smoothedAngles.y, curAngles.y);
 		float vz = UTIL_AngleDistance(smoothedAngles.z, curAngles.z);
 
-		if (fabsf(vx) < 0.1f)
+		/*if (fabsf(vx) < 0.1f)
 			vx = 0;
 
 		if (fabsf(vy) < 0.1f)
 			vy = 0;
 
 		if (fabsf(vz) < 0.1f)
-			vz = 0;
+			vz = 0;*/
 
 		if (flInterval == 0)
 			flInterval = 0.1f;
