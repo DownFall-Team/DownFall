@@ -105,11 +105,16 @@ float LerpDegrees(float start, float end, float amount)
 	return fmodf(value, rangeZero);
 }
 
-ConVar sv_downfall_train_smoothing_mode("sv_downfall_train_smoothing_mode", "approach", FCVAR_CHEAT, "Options are: approach, quaternion_slerp or spline_quaternion_slerp");
-ConVar sv_downfall_train_smoothness("sv_downfall_train_smoothness", "3", FCVAR_CHEAT);
+ConVar sv_downfall_train_smoothing_mode("sv_downfall_train_smoothing_mode", "quaternion_slerp", FCVAR_CHEAT, "Options are: valve, approach, quaternion_slerp or spline_quaternion_slerp");
+ConVar sv_downfall_train_smoothness("sv_downfall_train_smoothness", "0.28", FCVAR_CHEAT);
 
 void CFuncTrainDownfall::UpdateTrainOrientation(CPathTrack *pNext, CPathTrack *pNextNext, const Vector &nextPos, float flInterval)
 {
+	if (!sv_downfall_train_smoothing_mode.GetString() || !*sv_downfall_train_smoothing_mode.GetString() || !Q_strcmp(sv_downfall_train_smoothing_mode.GetString(), "valve"))
+	{
+		return BaseClass::UpdateTrainOrientation(pNext, pNextNext, nextPos, flInterval);
+	}
+
 	if (!m_ppath)
 		return;
 
