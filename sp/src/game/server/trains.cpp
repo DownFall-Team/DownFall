@@ -2037,6 +2037,7 @@ void CFuncTrackTrain::UpdateTrainOrientation( CPathTrack *pPrev, CPathTrack *pNe
 	// the same move parent as the train.
 	Assert( !pPrev || (pPrev->GetMoveParent() == GetMoveParent()) );
 
+
 	switch ( GetTrainOrientationType() )
 	{
 		case TrainOrientation_Fixed:
