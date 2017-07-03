@@ -72,14 +72,14 @@
 	input TurnOff(void)		: "Turn off the texture"
 	input FOV(float)		: "Set FOV"
 	input Target(string)	: "Set Target"
-	input CameraSpace(bool)	: "Set CameraSpace"
-	input LightOnlyTarget(bool)	: "Set LightOnlyTarget"
-	input LightWorld(bool)	: "Set LightWorld"
-	input EnableShadows(bool)	: "Set EnableShadows"
+	input CameraSpace(integer)	: "Set CameraSpace"
+	input LightOnlyTarget(integer)	: "Set LightOnlyTarget"
+	input LightWorld(integer)	: "Set LightWorld"
+	input EnableShadows(integer)	: "Set EnableShadows"
 	input LightColor(string)	: "Set LightColor"
 	input Ambient(float)	: "Set Ambient"
 	input SpotlightTexture(string)	: "Set SpotlightTexture"
-	input EnableVolumetrics(bool)	: "Set EnableVolumetrics"
+	input EnableVolumetrics(integer)	: "Set EnableVolumetrics"
 ]
 
 @SolidClass base(func_tracktrain) = func_train_downfall :
