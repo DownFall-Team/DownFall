@@ -52,10 +52,12 @@ void CTriggerGunFire::OnRestore()
 
 void CTriggerGunFire::RecieveGunfire(CBaseEntity* pFrom)
 {
-	m_eOnGunfire.FireOutput(pFrom, this);
+	if (!m_bDisabled)
+		m_eOnGunfire.FireOutput(pFrom, this);
 }
 
 void CTriggerGunFire::RecieveExplosion(CBaseEntity* pFrom)
 {
-	m_eOnExplosion.FireOutput(pFrom, this);
+	if (!m_bDisabled)
+		m_eOnExplosion.FireOutput(pFrom, this);
 }
