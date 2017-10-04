@@ -43,6 +43,7 @@ qboolean	noshare;
 qboolean	nosubdiv;
 qboolean	notjunc;
 qboolean	noopt;
+qboolean	nodefaultcubemap;
 qboolean	leaktest;
 qboolean	verboseentities;
 qboolean	dumpcollide = false;
@@ -55,6 +56,7 @@ bool		g_bKeepStaleZip = false;
 bool		g_NodrawTriggers = false;
 bool		g_DisableWaterLighting = false;
 bool		g_bAllowDetailCracks = false;
+bool		g_bAllowDynamicPropsAsStatic = false;
 bool		g_bNoVirtualMesh = false;
 
 float		g_defaultLuxelSize = DEFAULT_LUXEL_SIZE;
@@ -857,7 +859,8 @@ void ProcessModels (void)
 	}
 
 	// Turn the skybox into a cubemap in case we don't build env_cubemap textures.
-	Cubemap_CreateDefaultCubemaps();
+	if (!nodefaultcubemap)
+		Cubemap_CreateDefaultCubemaps();
 	EndBSPFile ();
 }
 
@@ -976,6 +979,11 @@ int RunVBSP( int argc, char **argv )
 			Msg ("fulldetail = true\n");
 			fulldetail = true;
 		}
+		else if (!Q_stricmp(argv[i], "-nodefaultcubemap"))
+		{
+			Msg ("nodefaultcubemap = true\n");
+			nodefaultcubemap = true;
+		}
 		else if (!Q_stricmp(argv[i], "-onlyents"))
 		{
 			Msg ("onlyents = true\n");
@@ -1007,7 +1015,7 @@ int RunVBSP( int argc, char **argv )
 			Msg ("snap axial = true\n");
 			g_snapAxialPlanes = true;
 		}
-#if 0
+#if 1
 		else if (!Q_stricmp(argv[i], "-maxlightmapdim"))
 		{
 			g_maxLightmapDimension = atof(argv[i+1]);
@@ -1051,7 +1059,7 @@ int RunVBSP( int argc, char **argv )
 		{
 			strcpy (outbase, "/tmp");
 		}
-#if 0
+#if 1
 		else if( !Q_stricmp( argv[i], "-defaultluxelsize" ) )
 		{
 			g_defaultLuxelSize = atof( argv[i+1] );
@@ -1112,6 +1120,10 @@ int RunVBSP( int argc, char **argv )
 		else if ( !Q_stricmp( argv[i], "-allowdetailcracks"))
 		{
 			g_bAllowDetailCracks = true;
+		}
+		else if ( !Q_stricmp( argv[i], "-allowdynamicpropsasstatic"))
+		{
+			g_bAllowDynamicPropsAsStatic = true;
 		}
 		else if ( !Q_stricmp( argv[i], "-novirtualmesh"))
 		{
@@ -1186,6 +1198,7 @@ int RunVBSP( int argc, char **argv )
 				"  -nomerge     : Don't merge together chopped faces on nodes.\n"
 				"  -nomergewater: Don't merge together chopped faces on water.\n"
 				"  -nosubdiv    : Don't subdivide faces for lightmapping.\n"
+				"  -nodefaultcubemap: Don't generate a default cubemap.\n"
 				"  -micro <#>   : vbsp will warn when brushes are output with a volume less\n"
 				"                 than this number (default: 1.0).\n"
 				"  -fulldetail  : Mark all detail geometry as normal geometry (so all detail\n"
@@ -1194,6 +1207,9 @@ int RunVBSP( int argc, char **argv )
 				"                 this flag is set, a leak file will be written out at\n"
 				"                 <vmf filename>.lin, and it can be imported into Hammer.\n"
 				"  -bumpall     : Force all surfaces to be bump mapped.\n"
+				"  -allowdynamicpropsasstatic: Allow all models with the 'static' flag in the\n"
+				"                              model viewer to be used on prop_static, even when\n"
+				"                              their propdata doesn't contain 'allowstatic'.\n"
 				"  -snapaxial   : Snap axial planes to integer coordinates.\n"
 				"  -block # #      : Control the grid size mins that vbsp chops the level on.\n"
 				"  -blocks # # # # : Enter the mins and maxs for the grid size vbsp uses.\n"
