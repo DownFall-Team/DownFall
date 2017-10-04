@@ -192,7 +192,7 @@ float DoShadowNvidiaPCF5x5Gaussian( sampler DepthSampler, const float4 shadowMap
 	float flCenterTap = tex2Dproj( DepthSampler, float4( shadowMapCenter, objDepth, 1 ) ).x * (55.0f / 331.0f);
 
 	// Sum all 25 Taps
-	return flOneTaps + flSevenTaps + +flFourTapsA + flFourTapsB + fl20Taps + fl33Taps + flCenterTap;
+	return flOneTaps + flSevenTaps + flFourTapsA + flFourTapsB + fl20Taps + fl33Taps + flCenterTap;
 }
 
 
@@ -691,6 +691,7 @@ void DoSpecularFlashlight( float3 flashlightPos, float3 worldPos, float4 flashli
 
 
 #if defined(SHADER_MODEL_PS_2_0) || defined(SHADER_MODEL_PS_2_B) || defined(SHADER_MODEL_PS_3_0)
+	flashlightColor *= flashlightSpacePosition.w > 0;
 	flashlightColor *= cFlashlightColor.xyz;						// Flashlight color
 #endif
 
@@ -734,29 +735,22 @@ float3 DoFlashlight( float3 flashlightPos, float3 worldPos, float4 flashlightSpa
 					sampler RandomRotationSampler, int nShadowLevel, bool bDoShadows, bool bAllowHighQuality,
 					const float2 vScreenPos, bool bClip, float4 vShadowTweaks = float4(3/1024.0f, 0.0005f, 0.0f, 0.0f), bool bHasNormal = true )
 {
-	float3 vProjCoords = flashlightSpacePosition.xyz / flashlightSpacePosition.w;
-	float3 flashlightColor = float3(1,1,1);
-
-#if ( defined( _X360 ) )
-
-	float3 ltz = vProjCoords.xyz < float3( 0.0f, 0.0f, 0.0f );
-	float3 gto = vProjCoords.xyz > float3( 1.0f, 1.0f, 1.0f );
-
-	[branch]
-	if ( dot(ltz + gto, float3(1,1,1)) > 0 )
+	if ( flashlightSpacePosition.w < 0 )
 	{
-		if ( bClip )
-		{
-			clip(-1);
-		}
 		return float3(0,0,0);
 	}
 	else
 	{
-		flashlightColor = tex2D( FlashlightSampler, vProjCoords );
+		float3 vProjCoords = flashlightSpacePosition.xyz / flashlightSpacePosition.w;
+		float3 flashlightColor = float3(1,1,1);
+
+#if ( defined( _X360 ) )
+
+		float3 ltz = vProjCoords.xyz < float3( 0.0f, 0.0f, 0.0f );
+		float3 gto = vProjCoords.xyz > float3( 1.0f, 1.0f, 1.0f );
 
 		[branch]
-		if ( dot(flashlightColor.xyz, float3(1,1,1)) <= 0 )
+		if ( dot(ltz + gto, float3(1,1,1)) > 0 )
 		{
 			if ( bClip )
 			{
@@ -764,58 +758,72 @@ float3 DoFlashlight( float3 flashlightPos, float3 worldPos, float4 flashlightSpa
 			}
 			return float3(0,0,0);
 		}
-	}
+		else
+		{
+			flashlightColor = tex2D( FlashlightSampler, vProjCoords );
+
+			[branch]
+			if ( dot(flashlightColor.xyz, float3(1,1,1)) <= 0 )
+			{
+				if ( bClip )
+				{
+					clip(-1);
+				}
+				return float3(0,0,0);
+			}
+		}
 #else
-	flashlightColor = tex2D( FlashlightSampler, vProjCoords );
+		flashlightColor = tex2D( FlashlightSampler, vProjCoords );
 #endif
 
 #if defined(SHADER_MODEL_PS_2_0) || defined(SHADER_MODEL_PS_2_B) || defined(SHADER_MODEL_PS_3_0)
-	flashlightColor *= cFlashlightColor.xyz;						// Flashlight color
+		flashlightColor *= cFlashlightColor.xyz;						// Flashlight color
 #endif
 
-	float3 delta = flashlightPos - worldPos;
-	float3 L = normalize( delta );
-	float distSquared = dot( delta, delta );
-	float dist = sqrt( distSquared );
+		float3 delta = flashlightPos - worldPos;
+		float3 L = normalize( delta );
+		float distSquared = dot( delta, delta );
+		float dist = sqrt( distSquared );
 
-	float endFalloffFactor = RemapValClamped( dist, farZ, 0.6f * farZ, 0.0f, 1.0f );
+		float endFalloffFactor = RemapValClamped( dist, farZ, 0.6f * farZ, 0.0f, 1.0f );
 
-	// Attenuation for light and to fade out shadow over distance
-	float fAtten = saturate( dot( attenuationFactors, float3( 1.0f, 1.0f/dist, 1.0f/distSquared ) ) );
+		// Attenuation for light and to fade out shadow over distance
+		float fAtten = saturate( dot( attenuationFactors, float3( 1.0f, 1.0f/dist, 1.0f/distSquared ) ) );
 
-	// Shadowing and coloring terms
+		// Shadowing and coloring terms
 #if (defined(SHADER_MODEL_PS_2_B) || defined(SHADER_MODEL_PS_3_0))
-	if ( bDoShadows )
-	{
-		float flShadow = DoFlashlightShadow( FlashlightDepthSampler, RandomRotationSampler, vProjCoords, vScreenPos, nShadowLevel, vShadowTweaks, bAllowHighQuality );
-		float flAttenuated = lerp( flShadow, 1.0f, vShadowTweaks.y );	// Blend between fully attenuated and not attenuated
-		flShadow = saturate( lerp( flAttenuated, flShadow, fAtten ) );	// Blend between shadow and above, according to light attenuation
-		flashlightColor *= flShadow;									// Shadow term
-	}
+		if ( bDoShadows )
+		{
+			float flShadow = DoFlashlightShadow( FlashlightDepthSampler, RandomRotationSampler, vProjCoords, vScreenPos, nShadowLevel, vShadowTweaks, bAllowHighQuality );
+			float flAttenuated = lerp( saturate( flShadow ), 1.0f, vShadowTweaks.y );	// Blend between fully attenuated and not attenuated
+			flShadow = saturate( lerp( flAttenuated, flShadow, fAtten ) );	// Blend between shadow and above, according to light attenuation
+			flashlightColor *= flShadow;									// Shadow term
+		}
 #endif
 
-	float3 diffuseLighting = fAtten;
+		float3 diffuseLighting = fAtten;
 
-	float flLDotWorldNormal;
-	if ( bHasNormal )
-	{
-		flLDotWorldNormal = dot( L.xyz, worldNormal.xyz );
-	}
-	else
-	{
-		flLDotWorldNormal = 1.0f;
-	}
+		float flLDotWorldNormal;
+		if ( bHasNormal )
+		{
+			flLDotWorldNormal = dot( L.xyz, worldNormal.xyz );
+		}
+		else
+		{
+			flLDotWorldNormal = 1.0f;
+		}
 
 #if defined(SHADER_MODEL_PS_2_0) || defined(SHADER_MODEL_PS_2_B) || defined(SHADER_MODEL_PS_3_0)
-	diffuseLighting *= saturate( flLDotWorldNormal + flFlashlightNoLambertValue ); // Lambertian term
+		diffuseLighting *= saturate( flLDotWorldNormal + flFlashlightNoLambertValue ); // Lambertian term
 #else
-	diffuseLighting *= saturate( flLDotWorldNormal ); // Lambertian (not Half-Lambert) term
+		diffuseLighting *= saturate( flLDotWorldNormal ); // Lambertian (not Half-Lambert) term
 #endif
 
-	diffuseLighting *= flashlightColor;
-	diffuseLighting *= endFalloffFactor;
+		diffuseLighting *= flashlightColor;
+		diffuseLighting *= endFalloffFactor;
 
-	return diffuseLighting;
+		return diffuseLighting;
+	}
 }
 
 #endif //#ifndef COMMON_FLASHLIGHT_FXC_H_

@@ -484,11 +484,10 @@ float4 main( PS_INPUT i ) : COLOR
 	result.a = 1.0;
 
 #if !defined( SHADER_MODEL_PS_2_0 )
-	float fogFactor = CalcPixelFogFactorConst( g_fPixelFogType, g_FogParams, g_vCameraPosition.z, i.vWorldPosition_ProjPosZ.z, i.vWorldPosition_ProjPosZ.w );
-	return FinalOutputConst( result, fogFactor, g_fPixelFogType, TONEMAP_SCALE_LINEAR );
+	float fogFactor = CalcPixelFogFactor( g_fPixelFogType, g_FogParams, g_vCameraPosition.xyz, i.vWorldPosition_ProjPosZ.xyz, i.vWorldPosition_ProjPosZ.w );
+	return FinalOutput( result, fogFactor, g_fPixelFogType, TONEMAP_SCALE_LINEAR );
 #else
-	float fogFactor = CalcPixelFogFactor( PIXEL_FOG_TYPE_NONE, g_FogParams, g_vCameraPosition.z, i.vWorldPosition_ProjPosZ.z, i.vWorldPosition_ProjPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXEL_FOG_TYPE_NONE, g_FogParams, g_vCameraPosition.xyz, i.vWorldPosition_ProjPosZ.xyz, i.vWorldPosition_ProjPosZ.w );
 	return FinalOutput( result, fogFactor, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_LINEAR );
 #endif
-
 }

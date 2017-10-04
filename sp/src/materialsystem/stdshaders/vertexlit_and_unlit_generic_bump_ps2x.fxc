@@ -327,9 +327,9 @@ float4 main( PS_INPUT i ) : COLOR
 	float3 result = diffuseComponent + specularLighting;
 
 #if defined(SHADER_MODEL_PS_2_0)
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
 #else
-	float fogFactor = CalcPixelFogFactorConst( g_fPixelFogType, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( g_fPixelFogType, g_FogParams, g_EyePos.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
 #endif
 
 #if defined( SHADER_MODEL_PS_2_0 )
@@ -343,7 +343,7 @@ float4 main( PS_INPUT i ) : COLOR
 #if defined( SHADER_MODEL_PS_2_0 )
 	return FinalOutput( float4( result.rgb, alpha ), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR, false, i.worldPos_projPosZ.w );
 #else
-	return FinalOutputConst( float4( result.rgb, alpha ), fogFactor, g_fPixelFogType, TONEMAP_SCALE_LINEAR, g_fWriteDepthToAlpha, i.worldPos_projPosZ.w );
+	return FinalOutput( float4( result.rgb, alpha ), fogFactor, g_fPixelFogType, TONEMAP_SCALE_LINEAR, g_fWriteDepthToAlpha, i.worldPos_projPosZ.w );
 #endif
 
 }

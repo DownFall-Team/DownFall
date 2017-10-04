@@ -1,1 +1,1 @@
-devtools\bin\vpc.exe /hl2 /episodic /downfall +game /mksln games.sln
+devtools\bin\vpc.exe /downfall +game /mksln games.sln
