@@ -74,9 +74,6 @@
 #include "c_point_camera.h"
 #endif // USE_MONITORS
 
-// Projective textures
-#include "C_Env_Projected_Texture.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -154,7 +151,6 @@ static ConVar r_WaterDrawReflection( "r_WaterDrawReflection", "1", 0, "Enable wa
 static ConVar r_ForceWaterLeaf( "r_ForceWaterLeaf", "1", 0, "Enable for optimization to water - considers view in leaf under water for purposes of culling" );
 static ConVar mat_drawwater( "mat_drawwater", "1", FCVAR_CHEAT );
 static ConVar mat_clipz( "mat_clipz", "1" );
-
 
 //-----------------------------------------------------------------------------
 // Other convars
@@ -4128,8 +4124,8 @@ void CRendering3dView::DrawOpaqueRenderables( ERenderDepthMode DepthMode )
 	//
 	// Ropes and particles
 	//
-	RopeManager()->DrawRenderCache( DepthMode );
-	g_pParticleSystemMgr->DrawRenderCache( DepthMode );
+	RopeManager()->DrawRenderCache( DepthMode != DEPTH_MODE_NORMAL );
+	g_pParticleSystemMgr->DrawRenderCache( DepthMode != DEPTH_MODE_NORMAL );
 }
 
 

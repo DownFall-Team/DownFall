@@ -16,6 +16,8 @@
 #include "view_scene.h"
 #include "viewrender.h"
 
+#include "debugoverlay_shared.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -195,6 +197,16 @@ void C_EnvProjectedTexture::OnDataChanged( DataUpdateType_t updateType )
 	UpdateLight( true );
 }
 
+static bool IsBBoxVisible( Vector vecExtentsMin, const Vector &vecExtentsMax )
+{
+	// Z position clamped to the min height (but must be less than the max)
+	float flVisibleBBoxMinHeight = Min( vecExtentsMax.z - 1.0f, -FLT_MAX );
+	vecExtentsMin.z = MAX( vecExtentsMin.z, flVisibleBBoxMinHeight );
+
+	// Check if the bbox is in the view
+	return !engine->CullBox( vecExtentsMin, vecExtentsMax );
+}
+
 void C_EnvProjectedTexture::UpdateLight( bool bForceUpdate )
 {
 	if ( m_bState == false )
@@ -274,6 +286,77 @@ void C_EnvProjectedTexture::UpdateLight( bool bForceUpdate )
 	m_FlashlightState.m_Color[3] = 0.0f; // fixme: need to make ambient work m_flAmbient;
 	m_FlashlightState.m_NearZ = m_flNearZ;
 	m_FlashlightState.m_FarZ = m_flFarZ;
+
+	// get the half-widths of the near and far planes, 
+	// based on the FOV which is in degrees. Remember that
+	// on planet Valve, x is forward, y left, and z up. 
+	const float tanHalfAngle = tan( m_flLightFOV * ( M_PI / 180.0f ) * 0.5f );
+	const float halfWidthNear = tanHalfAngle * m_flNearZ;
+	const float halfWidthFar = tanHalfAngle * m_flFarZ;
+	// now we can build coordinates in local space: the near rectangle is eg 
+	// (0, -halfWidthNear, -halfWidthNear), (0,  halfWidthNear, -halfWidthNear), 
+	// (0,  halfWidthNear,  halfWidthNear), (0, -halfWidthNear,  halfWidthNear)
+
+	const VectorAligned vNearRect[4] = {
+		VectorAligned( m_flNearZ, -halfWidthNear, -halfWidthNear ), VectorAligned( m_flNearZ,  halfWidthNear, -halfWidthNear ),
+		VectorAligned( m_flNearZ,  halfWidthNear,  halfWidthNear ), VectorAligned( m_flNearZ, -halfWidthNear,  halfWidthNear )
+	};
+
+	const VectorAligned vFarRect[4] = {
+		VectorAligned( m_flFarZ, -halfWidthFar, -halfWidthFar ), VectorAligned( m_flFarZ,  halfWidthFar, -halfWidthFar ),
+		VectorAligned( m_flFarZ,  halfWidthFar,  halfWidthFar ), VectorAligned( m_flFarZ, -halfWidthFar,  halfWidthFar )
+	};
+
+	matrix3x4_t matOrientation( vForward, -vRight, vUp, vPos );
+
+	enum
+	{
+		kNEAR = 0,
+		kFAR = 1,
+	};
+	VectorAligned vOutRects[2][4];
+
+	for ( int i = 0; i < 4; ++i )
+	{
+		VectorTransform( vNearRect[i].Base(), matOrientation, vOutRects[0][i].Base() );
+	}
+	for ( int i = 0; i < 4; ++i )
+	{
+		VectorTransform( vFarRect[i].Base(), matOrientation, vOutRects[1][i].Base() );
+	}
+
+	// now take the min and max extents for the bbox, and see if it is visible.
+	Vector mins = static_cast<Vector>(**vOutRects);
+	Vector maxs = static_cast<Vector>(**vOutRects);
+	for ( int i = 1; i < 8; ++i )
+	{
+		VectorMin( mins, *( *vOutRects + i ), mins );
+		VectorMax( maxs, *( *vOutRects + i ), maxs );
+	}
+
+#if 0 //for debugging the visibility frustum we just calculated
+	NDebugOverlay::Triangle( vOutRects[0][0], vOutRects[0][1], vOutRects[0][2], 255, 0, 0, 100, true, 0.0f ); //first tri
+	NDebugOverlay::Triangle( vOutRects[0][2], vOutRects[0][1], vOutRects[0][0], 255, 0, 0, 100, true, 0.0f ); //make it double sided
+	NDebugOverlay::Triangle( vOutRects[0][2], vOutRects[0][3], vOutRects[0][0], 255, 0, 0, 100, true, 0.0f ); //second tri
+	NDebugOverlay::Triangle( vOutRects[0][0], vOutRects[0][3], vOutRects[0][2], 255, 0, 0, 100, true, 0.0f ); //make it double sided
+
+	NDebugOverlay::Triangle( vOutRects[1][0], vOutRects[1][1], vOutRects[1][2], 0, 0, 255, 100, true, 0.0f ); //first tri
+	NDebugOverlay::Triangle( vOutRects[1][2], vOutRects[1][1], vOutRects[1][0], 0, 0, 255, 100, true, 0.0f ); //make it double sided
+	NDebugOverlay::Triangle( vOutRects[1][2], vOutRects[1][3], vOutRects[1][0], 0, 0, 255, 100, true, 0.0f ); //second tri
+	NDebugOverlay::Triangle( vOutRects[1][0], vOutRects[1][3], vOutRects[1][2], 0, 0, 255, 100, true, 0.0f ); //make it double sided
+
+	NDebugOverlay::Box( vec3_origin, mins, maxs, 0, 255, 0, 100, 0.0f );
+#endif
+
+	if ( !IsBBoxVisible( mins, maxs ) )
+	{
+		// Spotlight's extents aren't in view
+		if ( m_LightHandle != CLIENTSHADOW_INVALID_HANDLE )
+			ShutDownLightHandle();
+
+		return;
+	}
+
 	m_FlashlightState.m_flShadowSlopeScaleDepthBias = mat_slopescaledepthbias_shadowmap.GetFloat();
 	m_FlashlightState.m_flShadowDepthBias = mat_depthbias_shadowmap.GetFloat();
 	m_FlashlightState.m_bEnableShadows = m_bEnableShadows;

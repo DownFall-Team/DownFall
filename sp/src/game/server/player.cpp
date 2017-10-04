@@ -213,7 +213,7 @@ void CC_GiveCurrentAmmo( void )
 					pPlayer->GiveAmmo( giveAmount, GetAmmoDef()->GetAmmoOfIndex(ammoIndex)->pName );
 				}
 			}
-			if( pWeapon->UsesSecondaryAmmo() && pWeapon->HasSecondaryAmmo() )
+			if( pWeapon->UsesSecondaryAmmo() )
 			{
 				// Give secondary ammo out, as long as the player already has some
 				// from a presumeably natural source. This prevents players on XBox
@@ -793,28 +793,20 @@ void CBasePlayer::SnapEyeAngles( const QAngle &viewAngles )
 //			iMax - 
 // Output : int
 //-----------------------------------------------------------------------------
-int TrainSpeed(int iSpeed, int iMax)
+int TrainSpeed(float fSpeed, float fMax)
 {
-	float fSpeed, fMax;
-	int iRet = 0;
-
-	fMax = (float)iMax;
-	fSpeed = iSpeed;
-
 	fSpeed = fSpeed/fMax;
 
-	if (iSpeed < 0)
-		iRet = TRAIN_BACK;
-	else if (iSpeed == 0)
-		iRet = TRAIN_NEUTRAL;
+	if (fSpeed < 0)
+		return TRAIN_BACK;
+	else if (fSpeed == 0)
+		return TRAIN_NEUTRAL;
 	else if (fSpeed < 0.33)
-		iRet = TRAIN_SLOW;
+		return TRAIN_SLOW;
 	else if (fSpeed < 0.66)
-		iRet = TRAIN_MEDIUM;
+		return TRAIN_MEDIUM;
 	else
-		iRet = TRAIN_FAST;
-
-	return iRet;
+		return TRAIN_FAST;
 }
 
 void CBasePlayer::DeathSound( const CTakeDamageInfo &info )
@@ -3800,7 +3792,7 @@ void CBasePlayer::HandleFuncTrain(void)
 
 	if (vel)
 	{
-		m_iTrain = TrainSpeed(pTrain->m_flSpeed, ((CFuncTrackTrain*)pTrain)->GetMaxSpeed());
+		m_iTrain = TrainSpeed(((CFuncTrackTrain*)pTrain)->GetDesiredSpeed(), ((CFuncTrackTrain*)pTrain)->GetMaxSpeed());
 		m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
 	}
 }
@@ -6315,7 +6307,7 @@ bool CBasePlayer::ClientCommand( const CCommand &args )
 				VectorNormalize( vForward );
 
 				pSmoke->SetLocalOrigin( GetLocalOrigin() + vForward * 100 );
-				pSmoke->SetFadeTime(25, 30);	// Fade out between 25 seconds and 30 seconds.
+				pSmoke->SetRelativeFadeTime(25, 30);	// Fade out between 25 seconds and 30 seconds.
 				pSmoke->Activate();
 				pSmoke->SetLifetime(30);
 				pSmoke->FillVolume();

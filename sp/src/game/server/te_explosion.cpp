@@ -13,6 +13,10 @@
 #include "cbase.h"
 #include "te_particlesystem.h"
 
+#ifdef DOWNFALL
+#include "trigger_gunfire.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -110,28 +114,14 @@ END_SEND_TABLE()
 // Singleton to fire TEExplosion objects
 static CTEExplosion g_TEExplosion( "Explosion" );
 
-#ifdef DOWNFALL
-#include "trigger_gunfire.h"
-#endif
-
 void TE_Explosion( IRecipientFilter& filter, float delay,
 	const Vector* pos, int modelindex, float scale, int framerate, int flags, int radius, int magnitude, const Vector* normal, unsigned char materialType )
 {
 #ifdef DOWNFALL
-	int purposeRadius = radius;
-
-	if (purposeRadius == 0)
-		purposeRadius = 32;
-
-	CBaseEntity* ppEnts[256];
-	int nEntCount = UTIL_EntitiesInSphere(ppEnts, 256, *pos, purposeRadius, 0);
-
-	for (int i = 0; i < nEntCount; i++)
+	for ( CEntitySphereQuery query( *pos, radius ? radius : 32 ); query.GetCurrentEntity(); query.NextEntity() )
 	{
-		CTriggerGunFire* trigger = dynamic_cast<CTriggerGunFire*>(ppEnts[i]);
-		
-		if (trigger)
-			trigger->RecieveExplosion(NULL);
+		if ( CTriggerGunFire* trigger = dynamic_cast< CTriggerGunFire* >( query.GetCurrentEntity() ) )
+			trigger->RecieveExplosion( NULL );
 	}
 #endif
 
