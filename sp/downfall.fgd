@@ -71,7 +71,7 @@
 	input TurnOn(void)		: "Turn on the texture"
 	input TurnOff(void)		: "Turn off the texture"
 	input FOV(float)		: "Set FOV"
-	input Target(string)	: "Set Target"
+	input Target(target_destination)	: "Set Target"
 	input CameraSpace(integer)	: "Set CameraSpace"
 	input LightOnlyTarget(integer)	: "Set LightOnlyTarget"
 	input LightWorld(integer)	: "Set LightWorld"
@@ -92,4 +92,64 @@
 	input EnableControls(void) : "Enable control of the train."
 	input SetManualAccelSpeed(float) : "Set the speed the train accelerates at."
 	input SetManualDecelSpeed(float) : "Set the speed the train accelerates at."
+]
+
+@PointClass = env_light_projected_manager : "Env Light Projected Manager"
+[
+]
+
+@PointClass base(Targetname, Parentname, Angles) studio("models/editor/cone_helper.mdl") sphere() frustum(lightfov,nearz,farz,lightcolor,-1) = env_light_projected: "Projected texture entity."
+[
+	radius(string)				: "Enable Shadows Radius"	: "1250"	: "Distance to enable shadows"
+	radiusorigin(origin) 				: "Enable Shadow Radius Origin (X Y Z)" : : "The origin of the enable shadow radius."
+	target(target_destination)	: "Follow target"			:			: "target"	
+	lightfov(float)				: "Field of View"			: "90.0"	: "FOV"
+	nearz(float)				: "NearZ"					: "4.0"		: "Near Z for projected texture"
+	farz(float)					: "FarZ"					: "750.0"	: "Far Z for projected texture"
+	
+	pattern(string) : "Custom Appearance" : "" : "Set a custom pattern of light brightness for this light. Pattern format is a string of characters, where 'a' is total darkness, 'z' fully bright. i.e. 'aaggnnttzz' would be a steppy fade in from dark to light."
+	
+	spawnflags(flags) =
+	[
+		1  : "Enabled"			: 1
+	]
+	enableshadows(Choices) : "Enable Shadows" : 1 : "Enables/disables shadows from this projected texture." =
+	[
+		0 						: "No"
+		1						: "Yes"
+	]
+	
+	linearatten(float) : "Linear Attenuation" : "100.0"	: "Linear attenuation of projected texture"
+	
+	filtersize(float) : "Filter size" : "0.8"	: "Filter size for the light"
+	
+	lightcolor(color255)		: "Light Color" : "255 255 255 200" : "Light Color RGB-Intensity"
+	texturename(choices) 		: "Texture" : "effects/flashlight001" : "Texture to use, relative to materials/." =
+	[
+		"effects/flashlight002" : "Default"
+		"effects/flashlight001" : "Flashlight"
+		"effects/flashlight003" : "Crosshatched lamp"
+		"effects/flashlight004" : "Big coverage"
+		"effects/flashlight005" : "Car headlight"
+		"effects/flashlight006" : "Full coverage (no edge)"
+	]
+	onlydrawifshadowed(Choices) : "Only draw if shadowed" : 0 : "Disables the projected texture completely on low end systems that can't render shadows. Use this to prevent lights bleeding through walls because the walls aren't blocking the light etc." =
+	[
+		0 						: "No, this light is fine without shadows"
+		1						: "Yes, this light needs shadows"
+	]
+
+	// Inputs
+	input Toggle(void)					: "Toggle the light"
+	input TurnOn(void)					: "Turn on the texture"
+	input TurnOff(void)					: "Turn off the texture"
+	input SetFOV(float)					: "Set FOV"
+	input SpotlightTexture(string)		: "Set the texture"
+	input SetPattern(string)			: "Set the pattern"
+	input LightColor(color255)			: "Set the light colour"
+	input Target(target_destination)	: "Set the entity to follow"
+	
+	// Outputs
+	output OnTurnOn(void)				: "When we're turned on."
+	output OnTurnOff(void)				: "When we're turned off."
 ]
