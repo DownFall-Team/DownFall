@@ -69,6 +69,8 @@
 #include "dt_utlvector_send.h"
 #include "vote_controller.h"
 #include "ai_speech.h"
+#include "fogvolume.h"
+#include "fogcontroller.h"
 
 #if defined USES_ECON_ITEMS
 #include "econ_wearable.h"
@@ -4491,6 +4493,8 @@ void CBasePlayer::PostThink()
 {
 	m_vecSmoothedVelocity = m_vecSmoothedVelocity * SMOOTHING_FACTOR + GetAbsVelocity() * ( 1 - SMOOTHING_FACTOR );
 
+	UpdateFXVolume();
+
 	if ( !g_fGameOver && !m_iPlayerLocked )
 	{
 		if ( IsAlive() )
@@ -7548,6 +7552,45 @@ void CBasePlayer::HideViewModels( void )
 		vm->SetWeaponModel( NULL, NULL );
 	}
 }
+
+void CBasePlayer::UpdateFXVolume( void )
+{
+	CFogController *pFogController = NULL;
+
+	Vector eyePos;
+	CBaseEntity *pViewEntity = GetViewEntity();
+	if ( pViewEntity )
+	{
+		eyePos = pViewEntity->GetAbsOrigin();
+	}
+	else
+	{
+		eyePos = EyePosition();
+	}
+
+	CFogVolume *pFogVolume = CFogVolume::FindFogVolumeForPosition( eyePos );
+	if ( pFogVolume )
+	{
+		pFogController = pFogVolume->GetFogController();
+
+		if ( !pFogController )
+		{
+			pFogController = FogSystem()->GetMasterFogController();
+		}
+	}
+	else if ( TheFogVolumes.Count() > 0 )
+	{
+		// If we're not in a fog volume, clear our fog volume, if the map has any.
+		// This will get us back to using the master fog controller.
+		pFogController = FogSystem()->GetMasterFogController();
+	}
+
+	if ( pFogController && m_Local.m_PlayerFog.m_hCtrl.Get() != pFogController )
+	{
+		m_Local.m_PlayerFog.m_hCtrl.Set( pFogController );
+	}
+}
+
 
 class CStripWeapons : public CPointEntity
 {

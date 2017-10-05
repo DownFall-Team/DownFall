@@ -68,6 +68,7 @@ BEGIN_SEND_TABLE_NOBASE( CPlayerLocalData, DT_Local )
 	SendPropFloat( SENDINFO_STRUCTELEM( m_skybox3d.fog.start ), 0, SPROP_NOSCALE ),
 	SendPropFloat( SENDINFO_STRUCTELEM( m_skybox3d.fog.end ), 0, SPROP_NOSCALE ),
 	SendPropFloat( SENDINFO_STRUCTELEM( m_skybox3d.fog.maxdensity ), 0, SPROP_NOSCALE ),
+	SendPropFloat( SENDINFO_STRUCTELEM( m_skybox3d.fog.HDRColorScale ), 0, SPROP_NOSCALE ),
 
 	SendPropEHandle( SENDINFO_STRUCTELEM( m_PlayerFog.m_hCtrl ) ),
 

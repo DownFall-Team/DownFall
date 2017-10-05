@@ -2076,7 +2076,8 @@ bool fogparams_t::operator !=( const fogparams_t& other ) const
 		this->startLerpTo != other.startLerpTo ||
 		this->endLerpTo != other.endLerpTo ||
 		this->lerptime != other.lerptime ||
-		this->duration != other.duration )
+		this->duration != other.duration ||
+		this->HDRColorScale != other.HDRColorScale )
 		return true;
 
 	return false;

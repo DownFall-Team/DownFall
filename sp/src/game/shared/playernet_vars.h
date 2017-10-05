@@ -40,10 +40,12 @@ struct fogparams_t
 
 	CNetworkVar( float, startLerpTo );
 	CNetworkVar( float, endLerpTo );
+	CNetworkVar( float, maxdensityLerpTo );
 	CNetworkVar( float, lerptime );
 	CNetworkVar( float, duration );
 	CNetworkVar( bool, enable );
 	CNetworkVar( bool, blend );
+	CNetworkVar( float, HDRColorScale );
 };
 
 // Crappy. Needs to be here because it wants to use 
@@ -68,10 +70,16 @@ struct fogplayerparams_t
 	color32					m_OldColor;
 	float					m_flOldStart;
 	float					m_flOldEnd;
+	float					m_flOldMaxDensity;
+	float					m_flOldHDRColorScale;
+	float					m_flOldFarZ;
 
 	color32					m_NewColor;
 	float					m_flNewStart;
 	float					m_flNewEnd;
+	float					m_flNewMaxDensity;
+	float					m_flNewHDRColorScale;
+	float					m_flNewFarZ;
 
 	fogplayerparams_t()
 	{
@@ -80,9 +88,15 @@ struct fogplayerparams_t
 		m_OldColor.r = m_OldColor.g = m_OldColor.b = m_OldColor.a = 0;
 		m_flOldStart = 0.0f;
 		m_flOldEnd = 0.0f;
+		m_flOldMaxDensity = 1.0f;
+		m_flOldHDRColorScale = 1.0f;
+		m_flOldFarZ = 0;
 		m_NewColor.r = m_NewColor.g = m_NewColor.b = m_NewColor.a = 0;
 		m_flNewStart = 0.0f;
 		m_flNewEnd = 0.0f;
+		m_flNewMaxDensity = 1.0f;
+		m_flNewHDRColorScale = 1.0f;
+		m_flNewFarZ = 0;
 	}
 };
 

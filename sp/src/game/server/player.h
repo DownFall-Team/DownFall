@@ -621,6 +621,8 @@ public:
 	void					PlayWearableAnimsForPlaybackEvent( wearableanimplayback_t iPlayback );
 #endif
 
+	void					UpdateFXVolume( void );
+
 public:
 	// Player Physics Shadow
 	void					SetupVPhysicsShadow( const Vector &vecAbsOrigin, const Vector &vecAbsVelocity, CPhysCollide *pStandModel, const char *pStandHullName, CPhysCollide *pCrouchModel, const char *pCrouchHullName );

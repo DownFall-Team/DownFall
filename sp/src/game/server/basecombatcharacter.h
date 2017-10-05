@@ -171,12 +171,17 @@ public:
 	// -----------------------
 	// Fog
 	// -----------------------
+	void				OnFogTriggerStartTouch( CBaseEntity *fogTrigger );
+	void				OnFogTriggerEndTouch( CBaseEntity *fogTrigger );
+	CBaseEntity *		GetFogTrigger( void );
+
 	virtual bool		IsHiddenByFog( const Vector &target ) const;	///< return true if given target cant be seen because of fog
 	virtual bool		IsHiddenByFog( CBaseEntity *target ) const;		///< return true if given target cant be seen because of fog
 	virtual bool		IsHiddenByFog( float range ) const;				///< return true if given distance is too far to see through the fog
 	virtual float		GetFogObscuredRatio( const Vector &target ) const;///< return 0-1 ratio where zero is not obscured, and 1 is completely obscured
 	virtual float		GetFogObscuredRatio( CBaseEntity *target ) const;	///< return 0-1 ratio where zero is not obscured, and 1 is completely obscured
 	virtual float		GetFogObscuredRatio( float range ) const;		///< return 0-1 ratio where zero is not obscured, and 1 is completely obscured
+	virtual bool		GetFogParams( struct fogparams_t *fog ) const;			///< return the current fog parameters
 
 
 	// -----------------------
@@ -508,6 +513,10 @@ private:
 	// ---------------
 	CUtlVector<Relationship_t>		m_Relationship;						// Array of relationships
 
+	// Used by trigger_fog to manage when the character is touching multiple fog triggers simultaneously.
+	// The one at the HEAD of the list is always the current fog trigger for the character.
+	CUtlVector<EHANDLE> m_hTriggerFogList;
+	EHANDLE m_hLastFogTrigger;
 protected:
 	// shared ammo slots
 	CNetworkArrayForDerived( int, m_iAmmo, MAX_AMMO_SLOTS );

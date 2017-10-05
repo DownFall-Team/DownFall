@@ -187,6 +187,7 @@ BEGIN_RECV_TABLE_NOBASE( CPlayerLocalData, DT_Local )
 	RecvPropFloat( RECVINFO( m_skybox3d.fog.start ) ),
 	RecvPropFloat( RECVINFO( m_skybox3d.fog.end ) ),
 	RecvPropFloat( RECVINFO( m_skybox3d.fog.maxdensity ) ),
+	RecvPropFloat( RECVINFO( m_skybox3d.fog.HDRColorScale ) ),
 
 	// fog data
 	RecvPropEHandle( RECVINFO( m_PlayerFog.m_hCtrl ) ),
