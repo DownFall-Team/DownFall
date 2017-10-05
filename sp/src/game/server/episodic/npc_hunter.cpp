@@ -1586,7 +1586,7 @@ BEGIN_DATADESC( CNPC_Hunter )
 	DEFINE_EMBEDDED( m_CheckHintGroupTimer ),
 
 	// (Recomputed in Precache())
-	//DEFINE_FIELD( m_bInLargeOutdoorMap, FIELD_BOOLEAN ), 
+	DEFINE_KEYFIELD( m_bInLargeOutdoorMap, FIELD_BOOLEAN, "LargeOutdoorMap" ), 
 	DEFINE_FIELD( m_flTimeSawEnemyAgain, FIELD_TIME ),
 
 	//DEFINE_SOUNDPATCH( m_pGunFiringSound ),
@@ -1720,12 +1720,6 @@ void CNPC_Hunter::Precache()
 
 	UTIL_PrecacheOther( "hunter_flechette" );
 	UTIL_PrecacheOther( "sparktrail" );
-
-	m_bInLargeOutdoorMap = false;
-	if( !Q_strnicmp( STRING(gpGlobals->mapname), "ep2_outland_12", 14) )
-	{
-		m_bInLargeOutdoorMap = true;
-	}
 
 	BaseClass::Precache();
 }

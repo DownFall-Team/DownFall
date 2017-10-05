@@ -33,7 +33,7 @@
 	#include "ai_basenpc.h"
 	#include "env_zoom.h"
 
-	extern int TrainSpeed(int iSpeed, int iMax);
+	extern int TrainSpeed(float fSpeed, float fMax);
 	
 #endif
 

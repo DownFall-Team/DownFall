@@ -11,6 +11,8 @@
 #include "materialsystem/imaterialsystemhardwareconfig.h"	// Hardware config checks
 #include "tier0/icommandline.h"
 
+#include "tier0/memdbgon.h"
+
 ITexture* CBaseClientRenderTargets::CreateWaterReflectionTexture( IMaterialSystem* pMaterialSystem, int iSize )
 {
 	return pMaterialSystem->CreateNamedRenderTargetTextureEx2(
@@ -62,6 +64,11 @@ void CBaseClientRenderTargets::InitClientRenderTargets( IMaterialSystem* pMateri
 	m_CameraTexture.Init( CreateCameraTexture( pMaterialSystem, iCameraTextureSize ) );
 }
 
+void CBaseClientRenderTargets::InitClientRenderTargets( IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig )
+{
+	InitClientRenderTargets( pMaterialSystem, pHardwareConfig, 1024, 256 );
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Shut down each CTextureReference we created in InitClientRenderTargets.
 //			Called by the engine in material system shutdown.
@@ -76,3 +83,6 @@ void CBaseClientRenderTargets::ShutdownClientRenderTargets()
 	// Monitors
 	m_CameraTexture.Shutdown();
 }
+
+static CBaseClientRenderTargets g_RenderTargets;
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CBaseClientRenderTargets, IClientRenderTargets, CLIENTRENDERTARGETS_INTERFACE_VERSION, g_RenderTargets );

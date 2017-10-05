@@ -1,13 +1,7 @@
 #include "cbase.h"
 #include "trigger_gunfire.h"
 
-
-CUtlVector<CHandle<CTriggerGunFire>> g_hGunFireTriggers;
-
-CUtlVector<CHandle<CTriggerGunFire>>& GetGunFireTriggers(void)
-{
-	return g_hGunFireTriggers;
-}
+#include "tier0/memdbgon.h"
 
 LINK_ENTITY_TO_CLASS(trigger_gunfire, CTriggerGunFire);
 
@@ -16,14 +10,7 @@ BEGIN_DATADESC(CTriggerGunFire)
 	DEFINE_OUTPUT(m_eOnExplosion, "OnExplosion"),
 END_DATADESC()
 
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
-CTriggerGunFire::~CTriggerGunFire(void)
-{
-	g_hGunFireTriggers.FindAndRemove(this);
-}
+IMPLEMENT_AUTO_LIST( ITriggerGunFire );
 
 //-----------------------------------------------------------------------------
 // Purpose: Called when spawning, after keyvalues have been handled.
@@ -33,21 +20,9 @@ void CTriggerGunFire::Spawn(void)
 	BaseClass::Spawn();
 
 	InitTrigger();
-
-	g_hGunFireTriggers.AddToTail(this);
-
+	
 	// Stomp the touch function, because we don't want to respond to touch
 	SetTouch(NULL);
-}
-
-//------------------------------------------------------------------------------
-// Purpose:
-//------------------------------------------------------------------------------
-void CTriggerGunFire::OnRestore()
-{
-	BaseClass::OnRestore();
-
-	g_hGunFireTriggers.AddToTail(this);
 }
 
 void CTriggerGunFire::RecieveGunfire(CBaseEntity* pFrom)

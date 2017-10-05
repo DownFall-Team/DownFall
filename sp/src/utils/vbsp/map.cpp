@@ -15,6 +15,7 @@
 #include "materialsub.h"
 #include "fgdlib/fgdlib.h"
 #include "manifest.h"
+#include "mathlib/vmatrix.h"
 
 #ifdef VSVMFIO
 #include "VmfImport.h"
@@ -1597,6 +1598,12 @@ ChunkFileResult_t CMapFile::LoadEntityCallback(CChunkFile *pFile, int nParam)
 			return(ChunkFile_Ok);
 		}
 
+		if ( !strcmp( "func_detail_blocker" , pClassName ) )
+		{
+			AddDetailBlocker(mapent);
+			return(ChunkFile_Ok);
+		}
+
 		//
 		// func_ladder brushes are moved into the world entity.  We convert the func_ladder to an info_ladder
 		// that holds the ladder's mins and maxs, and leave the entity.  This helps the bots figure out ladders.
@@ -1618,15 +1625,98 @@ ChunkFileResult_t CMapFile::LoadEntityCallback(CChunkFile *pFile, int nParam)
 			if( ( g_nDXLevel == 0 ) || ( g_nDXLevel >= 70 ) )
 			{
 				const char *pSideListStr = ValueForKey( mapent, "sides" );
+                char *pParallaxObbStr = ValueForKey( mapent, "parallaxobb" );
 				int size;
 				size = IntForKey( mapent, "cubemapsize" );
-				Cubemap_InsertSample( mapent->origin, size );
+				Cubemap_InsertSample( mapent->origin, size, pParallaxObbStr );
 				Cubemap_SaveBrushSides( pSideListStr );
 			}
 			// clear out this entity
 			mapent->epairs = NULL;
 			return(ChunkFile_Ok);
 		}
+		
+        //
+        // parallax_obb brushes are removed after the transformation matrix is found and saved into the entity's data
+        // (ent will be removed after data transferred to patched materials)
+        //
+        if (!strcmp("parallax_obb", pClassName))
+        {
+            VMatrix invObbMatrix;
+			invObbMatrix.Identity();
+
+            // get corner and its 3 edges (scaled, local x, y, and z axes)
+            mapbrush_t *brush = &mapbrushes[mapent->firstbrush];
+            Vector corner, x, y, z;
+
+            // find first valid winding (with these whiles, if not enough valid windings then identity matrix is passed
+            // through to vmts)
+            int i = 0;
+            while (i < brush->numsides)
+            {
+                winding_t *wind = brush->original_sides[i].winding;
+                if (!wind)
+                {
+                    i++;
+                    continue;
+                }
+
+                corner = wind->p[0];
+                y = wind->p[1] - corner;
+                z = wind->p[3] - corner;
+                x = CrossProduct(y, z).Normalized();
+
+                i++;
+                break;
+            }
+
+            // skip second valid winding (opposite face from first, unusable for finding Z's length)
+            while (i < brush->numsides)
+            {
+                winding_t *wind = brush->original_sides[i].winding;
+                if (!wind)
+                {
+                    i++;
+                    continue;
+                }
+                i++;
+                break;
+            }
+
+            // find third valid winding
+            while (i < brush->numsides)
+            {
+                winding_t *wind = brush->original_sides[i].winding;
+                if (!wind)
+                {
+                    i++;
+                    continue;
+                }
+
+				x *= abs( DotProduct( wind->p[0] - wind->p[2], x ) );
+
+				VMatrix obbMatrix;
+				obbMatrix.Identity();
+                // build transformation matrix (what is needed to turn a [0,0,0] - [1,1,1] cube into this brush)
+				MatrixSetColumn( obbMatrix, 0, x );
+				MatrixSetColumn( obbMatrix, 1, y );
+				MatrixSetColumn( obbMatrix, 2, z );
+				MatrixSetColumn( obbMatrix, 3, corner );
+
+                // find inverse (we need the world to local matrix, "transformationmatrix" is kind of a misnomer)
+				obbMatrix.InverseTR( invObbMatrix );
+                break;
+            }
+
+            char szMatrix[1024];
+            Q_snprintf(szMatrix, 1024, "[%f %f %f %f %f %f %f %f %f %f %f %f 0 0 0 1]", invObbMatrix[0][0],
+                       invObbMatrix[0][1], invObbMatrix[0][2], invObbMatrix[0][3], invObbMatrix[1][0],
+                       invObbMatrix[1][1], invObbMatrix[1][2], invObbMatrix[1][3], invObbMatrix[2][0],
+                       invObbMatrix[2][1], invObbMatrix[2][2], invObbMatrix[2][3]);
+            SetKeyValue(mapent, "transformationmatrix", szMatrix);
+			
+            return (ChunkFile_Ok);
+        }
 
 		if ( !strcmp( "test_sidelist", pClassName ) )
 		{
@@ -2608,6 +2698,28 @@ bool LoadMapFile( const char *pszFileName )
 			Error("Error opening %s: %s.\n", pszFileName, File.GetErrorText(eResult));
 		}
 	}
+	
+	 // fill out parallax obb matrix array
+    for (int i = 0; i < g_nCubemapSamples; i++)
+    {
+        if (g_pParallaxObbStrs[i][0] != '\0')
+        {
+            entity_t *obbEnt = EntityByName(g_pParallaxObbStrs[i]);
+            g_pParallaxObbStrs[i] = ValueForKey(obbEnt, "transformationmatrix");
+        }
+    }
+	
+    // remove parallax_obb and cubemap entities (in a nice slow linear search)
+    for (int i = 0; i < g_MainMap->num_entities; i++)
+    {
+        entity_t *mapent = &g_MainMap->entities[i];
+        const char *pClassName = ValueForKey(mapent, "classname");
+        if (!strcmp("parallax_obb", pClassName))
+        {
+            mapent->numbrushes = 0;
+            mapent->epairs = NULL;
+        }
+    }
 
 	if ((eResult == ChunkFile_Ok) || (eResult == ChunkFile_EOF))
 	{

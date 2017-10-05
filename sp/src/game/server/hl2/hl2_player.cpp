@@ -745,7 +745,6 @@ void CHL2_Player::PreThink(void)
 	if ( m_afPhysicsFlags & PFLAG_DIROVERRIDE )
 	{
 		CBaseEntity *pTrain = GetGroundEntity();
-		float vel;
 
 		if ( pTrain )
 		{
@@ -802,7 +801,7 @@ void CHL2_Player::PreThink(void)
 		}
 
 		SetAbsVelocity( vec3_origin );
-		vel = 0;
+		int vel = 0;
 		if ( m_afButtonPressed & IN_FORWARD )
 		{
 			vel = 1;
@@ -816,7 +815,7 @@ void CHL2_Player::PreThink(void)
 
 		if (vel)
 		{
-			m_iTrain = TrainSpeed(pTrain->m_flSpeed, ((CFuncTrackTrain*)pTrain)->GetMaxSpeed());
+			m_iTrain = TrainSpeed(((CFuncTrackTrain*)pTrain)->GetDesiredSpeed(), ((CFuncTrackTrain*)pTrain)->GetMaxSpeed());
 			m_iTrain |= TRAIN_ACTIVE|TRAIN_NEW;
 		}
 	} 
@@ -2813,7 +2812,7 @@ void CHL2_Player::PlayerUse ( void )
 				if ( pTrain && !(m_nButtons & IN_JUMP) && (GetFlags() & FL_ONGROUND) && (pTrain->ObjectCaps() & FCAP_DIRECTIONAL_USE) && pTrain->OnControls(this) )
 				{
 					m_afPhysicsFlags |= PFLAG_DIROVERRIDE;
-					m_iTrain = TrainSpeed(pTrain->m_flSpeed, ((CFuncTrackTrain*)pTrain)->GetMaxSpeed());
+					m_iTrain = TrainSpeed(((CFuncTrackTrain*)pTrain)->GetDesiredSpeed(), ((CFuncTrackTrain*)pTrain)->GetMaxSpeed());
 					m_iTrain |= TRAIN_NEW;
 					EmitSound( "HL2Player.TrainUse" );
 					return;

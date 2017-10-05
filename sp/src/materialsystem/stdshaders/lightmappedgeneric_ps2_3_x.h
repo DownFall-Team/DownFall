@@ -146,6 +146,11 @@ sampler AlphaMaskSampler		: register( s11 );	// alpha
 #endif
 #endif
 
+#if PARALLAXCORRECT
+const float3 cubemapPos		: register( c21 );
+const float4x4 obbMatrix	: register( c22 );
+#endif
+
 #if defined( _X360 ) && FLASHLIGHT
 sampler FlashlightSampler		: register( s13 );
 sampler ShadowDepthSampler		: register( s14 );
@@ -330,7 +335,7 @@ HALF4 main( PS_INPUT i ) : COLOR
 		blendfactor=smoothstep(minb,maxb,blendfactor);
 #endif
 #endif
-		baseColor.rgb = lerp( baseColor, baseColor2.rgb, blendfactor );
+		baseColor.rgb = lerp( baseColor.rgb, baseColor2.rgb, blendfactor );
 		blendedAlpha = lerp( baseColor.a, baseColor2.a, blendfactor );
 	}
 
@@ -424,7 +429,7 @@ HALF4 main( PS_INPUT i ) : COLOR
 
 	// The vertex color contains the modulation color + vertex color combined
 #if ( SEAMLESS == 0 )
-	albedo.xyz *= i.vertexColor;
+	albedo.xyz *= i.vertexColor.xyz;
 #endif
 	alpha *= i.vertexColor.a * g_flAlpha2; // not sure about this one
 
@@ -447,9 +452,9 @@ HALF4 main( PS_INPUT i ) : COLOR
 		vNormal.xyz = normalize( bumpBasis[0]*vNormal.x + bumpBasis[1]*vNormal.y + bumpBasis[2]*vNormal.z);
 #else
 		float3 dp;
-		dp.x = saturate( dot( vNormal, bumpBasis[0] ) );
-		dp.y = saturate( dot( vNormal, bumpBasis[1] ) );
-		dp.z = saturate( dot( vNormal, bumpBasis[2] ) );
+		dp.x = saturate( dot( vNormal.xyz, bumpBasis[0] ) );
+		dp.y = saturate( dot( vNormal.xyz, bumpBasis[1] ) );
+		dp.z = saturate( dot( vNormal.xyz, bumpBasis[2] ) );
 		dp *= dp;
 		
 #if ( DETAIL_BLEND_MODE == TCOMBINE_SSBUMP_BUMP )
@@ -476,7 +481,7 @@ HALF4 main( PS_INPUT i ) : COLOR
 #endif
 
 #if CUBEMAP || LIGHTING_PREVIEW || ( defined( _X360 ) && FLASHLIGHT )
-	float3 worldSpaceNormal = mul( vNormal, i.tangentSpaceTranspose );
+	float3 worldSpaceNormal = mul( vNormal.xyz, i.tangentSpaceTranspose );
 #endif
 
 	float3 diffuseComponent = albedo.xyz * diffuseLighting;
@@ -514,7 +519,7 @@ HALF4 main( PS_INPUT i ) : COLOR
 
 	if( bSelfIllum )
 	{
-		float3 selfIllumComponent = g_SelfIllumTint * albedo.xyz;
+		float3 selfIllumComponent = g_SelfIllumTint.xyz * albedo.xyz;
 		diffuseComponent = lerp( diffuseComponent, selfIllumComponent, baseColor.a );
 	}
 
@@ -531,10 +536,25 @@ HALF4 main( PS_INPUT i ) : COLOR
 		fresnel = pow( fresnel, 5.0 );
 		fresnel = fresnel * g_OneMinusFresnelReflection + g_FresnelReflection;
 		
-		specularLighting = ENV_MAP_SCALE * texCUBE( EnvmapSampler, reflectVect );
+#if PARALLAXCORRECT
+        float3 worldPos = i.worldPos_projPosZ.xyz;
+        float3 positionLS = mul(worldPos, (float3x3) obbMatrix);
+        float3 rayLS = mul(reflectVect, (float3x3) obbMatrix);
+
+        float3 firstPlaneIntersect = (float3(1.0f, 1.0f, 1.0f) - positionLS) / rayLS;
+        float3 secondPlaneIntersect = (-positionLS) / rayLS;
+        float3 furthestPlane = max(firstPlaneIntersect, secondPlaneIntersect);
+        float distance = min(furthestPlane.x, min(furthestPlane.y, furthestPlane.z));
+
+        // Use distance in WS directly to recover intersection
+        float3 intersectPositionWS = worldPos + reflectVect * distance;
+        reflectVect = intersectPositionWS - cubemapPos;
+#endif
+
+		specularLighting = ENV_MAP_SCALE * texCUBE( EnvmapSampler, reflectVect ).rgb;
 		specularLighting *= specularFactor;
 								   
-		specularLighting *= g_EnvmapTint;
+		specularLighting *= g_EnvmapTint.rgb;
 #if FANCY_BLENDING == 0
 		HALF3 specularLightingSquared = specularLighting * specularLighting;
 		specularLighting = lerp( specularLighting, specularLightingSquared, g_EnvmapContrast );
@@ -548,7 +568,6 @@ HALF4 main( PS_INPUT i ) : COLOR
 	HALF3 result = diffuseComponent + specularLighting;
 	
 #if LIGHTING_PREVIEW
-	worldSpaceNormal = mul( vNormal, i.tangentSpaceTranspose );
 #	if LIGHTING_PREVIEW == 1
 	float dotprod = 0.7+0.25 * dot( worldSpaceNormal, normalize( float3( 1, 2, -.5 ) ) );
 	return FinalOutput( HALF4( dotprod*albedo.xyz, alpha ), 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
@@ -570,7 +589,7 @@ HALF4 main( PS_INPUT i ) : COLOR
 	bWriteDepthToAlpha = ( WRITE_DEPTH_TO_DESTALPHA != 0 ) && ( WRITEWATERFOGTODESTALPHA == 0 );
 #endif
 
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
 
 #if WRITEWATERFOGTODESTALPHA && (PIXELFOGTYPE == PIXEL_FOG_TYPE_HEIGHT)
 	alpha = fogFactor;

@@ -260,10 +260,11 @@ public:
 #ifndef GAME_SHADER_DLL
 	// Computes the shader index for vertex lit materials
 	int ComputeVertexLitShaderIndex( bool bVertexLitGeneric, bool hasBump, bool hasEnvmap, bool hasVertexColor, bool bHasNormal ) const;
-
+#endif // GAME_SHADER_DLL
 	// Helper for setting up flashlight constants
 	void SetFlashlightVertexShaderConstants( bool bBump, int bumpTransformVar, bool bDetail, int detailScaleVar, bool bSetTextureTransforms );
 
+#ifndef GAME_SHADER_DLL
 #if SUPPORT_DX8
 	void DrawFlashlight_dx80( IMaterialVar** params, IShaderDynamicAPI *pShaderAPI, IShaderShadow* pShaderShadow, 
 		bool bBump, int bumpmapVar, int bumpmapFrame, int bumpTransform, int flashlightTextureVar, 
@@ -271,6 +272,7 @@ public:
 		int nWorldVertexTransitionPassID, int baseTexture2Var, int baseTexture2FrameVar,
 		bool bTeeth=false, int nTeethForwardVar=0, int nTeethIllumFactorVar=0 );
 #endif
+#endif // GAME_SHADER_DLL
 
 	struct DrawFlashlight_dx90_Vars_t
 	{
@@ -311,6 +313,7 @@ public:
 		bool m_bSSBump;
 		float m_fSeamlessScale;								// 0.0 = not seamless
 	};
+#ifndef GAME_SHADER_DLL
 	void DrawFlashlight_dx90( IMaterialVar** params, 
 		IShaderDynamicAPI *pShaderAPI, IShaderShadow* pShaderShadow, DrawFlashlight_dx90_Vars_t &vars );
 #endif // GAME_SHADER_DLL

@@ -6,9 +6,6 @@
 
 #include "cpp_shader_constant_register_map.h"
 
-#include "eyes_flashlight_vs11.inc"
-#include "eyes_flashlight_ps11.inc"
-
 #include "eye_refract_vs20.inc"
 #include "eye_refract_ps20.inc"
 #include "eye_refract_ps20b.inc"

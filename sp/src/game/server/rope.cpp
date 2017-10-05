@@ -37,6 +37,7 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CRopeKeyframe, DT_RopeKeyframe )
 	SendPropInt( SENDINFO(m_Slack), 12 ),
 	SendPropInt( SENDINFO(m_RopeLength), 15 ),
 	SendPropInt( SENDINFO(m_fLockedPoints), 4, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO(m_nChangeCount), 8, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO(m_RopeFlags), ROPE_NUMFLAGS, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO(m_nSegments), 4, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO(m_bConstrainBetweenEndpoints) ),
@@ -201,10 +202,11 @@ CRopeKeyframe* CRopeKeyframe::Create(
 	int iEndAttachment,
 	int ropeWidth,
 	const char *pMaterialName,
-	int numSegments
+	int numSegments,
+	const char *pClassName
 	)
 {
-	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( "keyframe_rope" );
+	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( pClassName );
 	if( !pRet )
 		return NULL;
 
@@ -218,6 +220,7 @@ CRopeKeyframe* CRopeKeyframe::Create(
 	pRet->SetMaterial( pMaterialName );
 	pRet->m_Width = ropeWidth;
 	pRet->m_nSegments = clamp( numSegments, 2, ROPE_MAX_SEGMENTS );
+	pRet->Spawn();
 
 	return pRet;
 }
@@ -230,10 +233,11 @@ CRopeKeyframe* CRopeKeyframe::CreateWithSecondPointDetached(
 	int ropeWidth,
 	const char *pMaterialName,
 	int numSegments,
-	bool bInitialHang
+	bool bInitialHang,
+	const char *pClassName
 	)
 {
-	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( "keyframe_rope" );
+	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( pClassName );
 	if( !pRet )
 		return NULL;
 
@@ -329,6 +333,24 @@ void CRopeKeyframe::Init()
 
 	m_bStartPointValid = (m_hStartPoint.Get() != NULL);
 	m_bEndPointValid = (m_hEndPoint.Get() != NULL);
+
+	// Sanity-check the rope texture scale before it goes over the wire
+	if ( m_TextureScale < 0.1f )
+	{
+		Vector origin = GetAbsOrigin();
+		GetEndPointPos( 0, origin );
+		DevMsg( "move_rope has TextureScale less than 0.1 at (%2.2f, %2.2f, %2.2f)\n",
+			origin.x, origin.y, origin.z );
+		m_TextureScale = 0.1f;
+	}
+	else if ( m_TextureScale > 10.0f )
+	{
+		Vector origin = GetAbsOrigin();
+		GetEndPointPos( 0, origin );
+		DevMsg( "move_rope has TextureScale greater than 10 at (%2.2f, %2.2f, %2.2f)\n",
+			origin.x, origin.y, origin.z );
+		m_TextureScale = 10.0f;
+	}
 }
 
 
@@ -585,6 +607,8 @@ bool CRopeKeyframe::Break( void )
 //-----------------------------------------------------------------------------
 void CRopeKeyframe::NotifyPositionChanged( CBaseEntity *pEntity )
 {
+	++m_nChangeCount;
+
 	// Update our bbox?
 	UpdateBBox( false );
 
@@ -650,15 +674,16 @@ void CRopeKeyframe::EnableCollision()
 void CRopeKeyframe::EnableWind( bool bEnable )
 {
 	int flag = 0;
-	if ( !bEnable )
-		flag |= ROPE_NO_WIND;
+	if ( bEnable )
+	{
+		flag |= ROPE_USE_WIND;
+	}
 
-	if ( (m_RopeFlags & ROPE_NO_WIND) != flag )
+	if ( (m_RopeFlags & ROPE_USE_WIND) != flag )
 	{
 		m_RopeFlags |= flag;
 	}
 }
-
 
 bool CRopeKeyframe::KeyValue( const char *szKeyName, const char *szValue )
 {
@@ -676,6 +701,11 @@ bool CRopeKeyframe::KeyValue( const char *szKeyName, const char *szValue )
 	{
 		if( atoi( szValue ) == 1 )
 			m_RopeFlags |= ROPE_BARBED;
+	}
+	else if( stricmp( szKeyName, "UseWind" ) == 0 )
+	{
+		if( atoi( szValue ) == 1 )
+			m_RopeFlags |= ROPE_USE_WIND;
 	}
 	else if( stricmp( szKeyName, "Dangling" ) == 0 )
 	{
@@ -700,15 +730,15 @@ bool CRopeKeyframe::KeyValue( const char *szKeyName, const char *szValue )
 		int iShader = atoi( szValue );
 		if ( iShader == 0 )
 		{
-			m_iRopeMaterialModelIndex = PrecacheModel( "cable/cable.vmt" );
+			m_strRopeMaterialModel = MAKE_STRING( "cable/cable.vmt" );
 		}
 		else if ( iShader == 1 )
 		{
-			m_iRopeMaterialModelIndex = PrecacheModel( "cable/rope.vmt" );
+			m_strRopeMaterialModel = MAKE_STRING( "cable/rope.vmt" );
 		}
 		else
 		{
-			m_iRopeMaterialModelIndex = PrecacheModel( "cable/chain.vmt" );
+			m_strRopeMaterialModel = MAKE_STRING( "cable/chain.vmt" );
 		}
 	}
 	else if ( stricmp( szKeyName, "RopeMaterial" ) == 0 )
@@ -723,13 +753,6 @@ bool CRopeKeyframe::KeyValue( const char *szKeyName, const char *szValue )
 			char str[512];
 			Q_snprintf( str, sizeof( str ), "%s.vmt", szValue );
 			SetMaterial( str );
-		}
-	}
-	else if ( stricmp( szKeyName, "NoWind" ) == 0 )
-	{
-		if ( atoi( szValue ) == 1 )
-		{
-			m_RopeFlags |= ROPE_NO_WIND;
 		}
 	}
 	
@@ -749,7 +772,6 @@ void CRopeKeyframe::InputSetScrollSpeed( inputdata_t &inputdata )
 void CRopeKeyframe::SetMaterial( const char *pName )
 {
 	m_strRopeMaterialModel = AllocPooledString( pName );
-	m_iRopeMaterialModelIndex = PrecacheModel( STRING( m_strRopeMaterialModel ) );
 }
 
 int CRopeKeyframe::UpdateTransmitState()

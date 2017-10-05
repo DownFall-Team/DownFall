@@ -148,7 +148,7 @@ BEGIN_DATADESC( CNPC_CScanner )
 	DEFINE_FIELD( m_nPoseFaceVert,			FIELD_INTEGER ),
 	DEFINE_FIELD( m_nPoseFaceHoriz,			FIELD_INTEGER ),
 
-	DEFINE_FIELD( m_bIsClawScanner,			FIELD_BOOLEAN ),
+	DEFINE_KEYFIELD( m_bIsClawScanner,			FIELD_BOOLEAN, "ClawScanner" ),
 	DEFINE_FIELD( m_bIsOpen,				FIELD_BOOLEAN ),
 
 	// DEFINE_FIELD( m_bHasSpoken,			FIELD_BOOLEAN ),
@@ -208,7 +208,7 @@ CNPC_CScanner::CNPC_CScanner()
 	Q_strncpy(szMapName, STRING(gpGlobals->mapname), sizeof(szMapName) );
 	Q_strlower(szMapName);
 
-	if( !Q_strnicmp( szMapName, "d3_c17", 6 ) )
+	/*if( !Q_strnicmp( szMapName, "d3_c17", 6 ) )
 	{
 		// Streetwar scanners are claw scanners
 		m_bIsClawScanner = true;
@@ -216,7 +216,7 @@ CNPC_CScanner::CNPC_CScanner()
 	else
 	{
 		m_bIsClawScanner = false;
-	}
+	}*/
 }
 
 //-----------------------------------------------------------------------------

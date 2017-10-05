@@ -1830,25 +1830,22 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 #endif //#ifdef GAME_DLL
 			bHitWater = true;
 		}
-
-#ifdef GAME_DLL
-#ifdef DOWNFALL
-		trace_t		gunfireTr;
-
-		auto& gfTriggers = GetGunFireTriggers();
-		FOR_EACH_VEC(gfTriggers, i)
+		
+#if defined(DOWNFALL) && defined(GAME_DLL)
+		const CUtlVector<ITriggerGunFire*>& gfTriggers = ITriggerGunFire::AutoList();
+		FOR_EACH_VEC( gfTriggers, i )
 		{
-			CTriggerGunFire* trigger = gfTriggers[i];
+			CTriggerGunFire* trigger = static_cast< CTriggerGunFire* >( gfTriggers[i] );
 
-			if (IsPlayer() && info.m_iShots > 1 && iShot % 2)
-				UTIL_TraceModel(info.m_vecSrc, vecEnd, Vector(-3, -3, -3), Vector(3, 3, 3), trigger, COLLISION_GROUP_NONE, &gunfireTr); // Shotgun
+			trace_t gunfireTr;
+			if ( IsPlayer() && info.m_iShots > 1 && iShot % 2 )
+				UTIL_TraceModel( info.m_vecSrc, vecEnd, Vector( -3, -3, -3 ), Vector( 3, 3, 3 ), trigger, COLLISION_GROUP_NONE, &gunfireTr ); // Shotgun
 			else
-				UTIL_TraceModel(info.m_vecSrc, vecEnd, Vector(0, 0, 0), Vector(0, 0, 0), trigger, COLLISION_GROUP_NONE, &gunfireTr);
+				UTIL_TraceModel( info.m_vecSrc, vecEnd, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), trigger, COLLISION_GROUP_NONE, &gunfireTr );
 
-			if (gunfireTr.DidHit())
-				trigger->RecieveGunfire(this);
+			if ( gunfireTr.DidHit() )
+				trigger->RecieveGunfire( this );
 		}
-#endif
 #endif
 
 		// Now hit all triggers along the ray that respond to shots...

@@ -1590,8 +1590,6 @@ BlendType_t CBaseVSShader::EvaluateBlendRequirements( int textureVar, bool isBas
 	}
 }
 
-#ifndef GAME_SHADER_DLL
-
 void CBaseVSShader::SetFlashlightVertexShaderConstants( bool bBump, int bumpTransformVar, bool bDetail, int detailScaleVar, bool bSetTextureTransforms )
 {
 	Assert( !IsSnapshotting() );
@@ -1633,6 +1631,7 @@ void CBaseVSShader::SetFlashlightVertexShaderConstants( bool bBump, int bumpTran
 	}
 }
 
+#ifndef GAME_SHADER_DLL
 #if SUPPORT_DX8
 void CBaseVSShader::DrawFlashlight_dx80( IMaterialVar** params, IShaderDynamicAPI *pShaderAPI, IShaderShadow* pShaderShadow, bool bBump,
 										int bumpmapVar, int bumpmapFrame, int bumpTransform, int flashlightTextureVar, int flashlightTextureFrameVar,

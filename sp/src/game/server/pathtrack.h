@@ -106,7 +106,7 @@ public:
 		return iRetVal;
 	}
 
-	bool IsDisabled( void ){ return FBitSet( m_spawnflags, SF_PATH_DISABLED ); }
+	bool IsDisabled( void ) const { return FBitSet( m_spawnflags, SF_PATH_DISABLED ); }
 
 	void InputPass( inputdata_t &inputdata );
 	void InputTeleport( inputdata_t &inputdata );

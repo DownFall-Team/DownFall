@@ -39,6 +39,7 @@ public:
 	// Shutdown all custom render targets here.
 	virtual void ShutdownClientRenderTargets ( void );
 
+	void InitClientRenderTargets( IMaterialSystem* pMaterialSystem, IMaterialSystemHardwareConfig* pHardwareConfig );
 protected:
 	
 	// Standard render textures used by most mods-- Classes inheriting from

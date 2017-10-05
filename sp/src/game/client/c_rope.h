@@ -106,8 +106,7 @@ public:
 	bool			GetEndPointPos( int iPt, Vector &vPos );
 
 	// Get the rope material data.
-	IMaterial		*GetSolidMaterial( void );
-	IMaterial		*GetBackMaterial( void );
+	IMaterial		*GetSolidMaterial( void )		{ return m_pMaterial; }
 
 	struct BuildRopeQueuedData_t
 	{
@@ -119,7 +118,7 @@ public:
 		float	m_Slack;
 	};
 
-	void			BuildRope( RopeSegData_t *pRopeSegment, const Vector &vCurrentViewForward, const Vector &vCurrentViewOrigin, BuildRopeQueuedData_t *pQueuedData, bool bQueued );
+	void			BuildRope( RopeSegData_t *pRopeSegment, const Vector &vCurrentViewForward, const Vector &vCurrentViewOrigin, BuildRopeQueuedData_t *pQueuedData );
 
 // C_BaseEntity overrides.
 public:
@@ -196,19 +195,19 @@ private:
 	float			m_TextureScale;		// pixels per inch
 	
 	int				m_fLockedPoints;	// Which points are locked down.
+	int				m_nChangeCount;
 
 	float				m_Width;
 
 	CPhysicsDelegate	m_PhysicsDelegate;
 
 	IMaterial		*m_pMaterial;
-	IMaterial		*m_pBackMaterial;			// Optional translucent background material for the rope to help reduce aliasing.
 
 	int				m_TextureHeight;	// Texture height, for texture scale calculations.
 
 	// Instantaneous force
-	Vector			m_flImpulse;
-	Vector			m_flPreviousImpulse;
+	Vector			m_vecImpulse;
+	Vector			m_vecPreviousImpulse;
 
 	// Simulated wind gusts.
 	float			m_flCurrentGustTimer;
@@ -250,10 +249,6 @@ public:
 	virtual void				ResetRenderCache( void ) = 0;
 	virtual void				AddToRenderCache( C_RopeKeyframe *pRope ) = 0;
 	virtual void				DrawRenderCache( bool bShadowDepth ) = 0;
-	virtual void				OnRenderStart( void ) = 0;
-	virtual void				SetHolidayLightMode( bool bHoliday ) = 0;
-	virtual bool				IsHolidayLightMode( void ) = 0;
-	virtual int					GetHolidayLightStyle( void ) = 0;
 };
 
 IRopeManager *RopeManager();

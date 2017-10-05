@@ -37,7 +37,11 @@ public:
 
 private:
 	int m_iPos;
+	CHudTexture* m_pArSpeedIcons[5];
 
+	CPanelAnimationVarAliasType( float, icon_xpos, "icon_xpos", "8", "proportional_float" );
+	CPanelAnimationVarAliasType( float, icon_ypos, "icon_ypos", "40", "proportional_float" );
+	CPanelAnimationVar( int, size, "size", "32" );
 };
 
 //
@@ -85,6 +89,11 @@ void CHudTrain::Init(void)
 //-----------------------------------------------------------------------------
 void CHudTrain::VidInit(void)
 {
+	m_pArSpeedIcons[0] = gHUD.GetIcon( "train0" );
+	m_pArSpeedIcons[1] = gHUD.GetIcon( "train1" );
+	m_pArSpeedIcons[2] = gHUD.GetIcon( "train2" );
+	m_pArSpeedIcons[3] = gHUD.GetIcon( "train3" );
+	m_pArSpeedIcons[4] = gHUD.GetIcon( "train4" );
 }
 
 //-----------------------------------------------------------------------------
@@ -100,7 +109,8 @@ bool CHudTrain::ShouldDraw( void )
 //-----------------------------------------------------------------------------
 void CHudTrain::Paint()
 {
-	// FIXME:  Rewrite using vgui materials if we still do this type of train UI!!!
+	if ( m_iPos > 0 && m_iPos < 6 )
+		m_pArSpeedIcons[m_iPos - 1]->DrawSelf( icon_xpos, icon_ypos, size, size, gHUD.m_clrYellowish );
 }
 
 //-----------------------------------------------------------------------------
@@ -110,4 +120,6 @@ void CHudTrain::MsgFunc_Train( bf_read &msg )
 {
 	// update Train data
 	m_iPos = msg.ReadByte();
+	//static const Color k( 0, 128, 255, 255 );
+	//ConColorMsg( k, "Train: %d\n", m_iPos );
 }
