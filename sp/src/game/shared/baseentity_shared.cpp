@@ -1704,6 +1704,7 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	bool bDoTracers = false;
 	
 	float flCumulativeDamage = 0.0f;
+	bool bDidTrigger = false;
 
 	for (int iShot = 0; iShot < info.m_iShots; iShot++)
 	{
@@ -1838,13 +1839,16 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 			CTriggerGunFire* trigger = static_cast< CTriggerGunFire* >( gfTriggers[i] );
 
 			trace_t gunfireTr;
-			if ( IsPlayer() && info.m_iShots > 1 && iShot % 2 )
+			if ( IsPlayer() && iShot % 2 )
 				UTIL_TraceModel( info.m_vecSrc, vecEnd, Vector( -3, -3, -3 ), Vector( 3, 3, 3 ), trigger, COLLISION_GROUP_NONE, &gunfireTr ); // Shotgun
 			else
 				UTIL_TraceModel( info.m_vecSrc, vecEnd, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ), trigger, COLLISION_GROUP_NONE, &gunfireTr );
 
-			if ( gunfireTr.DidHit() )
+			if ( gunfireTr.DidHit() && !bDidTrigger )
+			{
 				trigger->RecieveGunfire( this );
+				bDidTrigger = true;
+			}
 		}
 #endif
 
