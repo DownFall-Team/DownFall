@@ -2205,6 +2205,7 @@ static void DrawPyroPost( IMaterial *pMaterial,
 	pRenderContext->PopMatrix();
 }
 
+extern void GetTonemapSettingsFromEnvTonemapController();
 
 static ConVar r_queued_post_processing( "r_queued_post_processing", "0" );
 
@@ -2250,6 +2251,8 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 	float flBloomScale = GetBloomAmount();
 
 	HDRType_t hdrType = g_pMaterialSystemHardwareConfig->GetHDRType();
+
+	GetTonemapSettingsFromEnvTonemapController();
 
 	g_bFlashlightIsOn = bFlashlightIsOn;
 

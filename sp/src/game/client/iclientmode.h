@@ -148,6 +148,9 @@ public:
 	virtual bool	IsInfoPanelAllowed() = 0;
 	virtual void	InfoPanelDisplayed() = 0;
 	virtual bool	IsHTMLInfoPanelAllowed() = 0;
+
+	virtual void	OnColorCorrectionWeightsReset() = 0;
+	virtual float	GetColorCorrectionScale() const = 0;
 };	
 
 extern IClientMode *g_pClientMode;

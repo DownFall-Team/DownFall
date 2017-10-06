@@ -10,6 +10,7 @@
 
 
 class CFogController;
+class CColorCorrection;	 
 
 
 //--------------------------------------------------------------------------------------------------------
@@ -37,13 +38,20 @@ public:
 		return m_hFogController.Get();
 	}
 
+	CColorCorrection* GetColorCorrectionController( ) const
+	{
+		return m_hColorCorrectionController.Get();
+	}
+
 	void InputEnable( inputdata_t &data );
 	void InputDisable( inputdata_t &data );
 
 private:
 	string_t m_fogName;
+	string_t m_colorCorrectionName;
 
 	CHandle< CFogController > m_hFogController;
+	CHandle< CColorCorrection > m_hColorCorrectionController;
 
 	bool m_bDisabled;
 	bool m_bInFogVolumesList;

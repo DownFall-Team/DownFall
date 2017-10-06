@@ -3,6 +3,8 @@
 
 #include "cbase.h"
 #include "fogvolume.h"
+#include "colorcorrection.h"
+
 #include "collisionutils.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -22,9 +24,11 @@ BEGIN_DATADESC( CFogVolume )
 	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
 
 	DEFINE_KEYFIELD( m_fogName, FIELD_STRING, "FogName" ),
+	DEFINE_KEYFIELD( m_colorCorrectionName, FIELD_STRING, "ColorCorrectionName" ),
 	DEFINE_KEYFIELD( m_bDisabled, FIELD_BOOLEAN,	"StartDisabled" ),
 
 	DEFINE_FIELD( m_hFogController, FIELD_EHANDLE ),
+	DEFINE_FIELD( m_hColorCorrectionController, FIELD_EHANDLE ),
 
 END_DATADESC()
 
@@ -54,7 +58,7 @@ CFogVolume *CFogVolume::FindFogVolumeForPosition( const Vector &position )
 			char fogVolumeName[256];
 			fogVolume->GetKeyValue( "targetname", fogVolumeName, 256 );
 			engine->Con_NPrintf( 0, "Fog Volume ""%s"" found at position (%f %f %f)", fogVolumeName, position.x, position.y, position.z );
-			engine->Con_NPrintf( 1, "Fog: %s", fogVolume->m_fogName );
+			engine->Con_NPrintf( 1, "Fog: %s, color correct: %s", fogVolume->m_fogName, fogVolume->m_colorCorrectionName );
 		}
 		else
 		{
@@ -139,6 +143,7 @@ void CFogVolume::Activate()
 	BaseClass::Activate();
 
 	m_hFogController = dynamic_cast< CFogController* >( gEntList.FindEntityByName( NULL, m_fogName ) );
+	m_hColorCorrectionController = dynamic_cast< CColorCorrection* >( gEntList.FindEntityByName( NULL, m_colorCorrectionName ) );
 
 	if ( !m_bDisabled )
 	{

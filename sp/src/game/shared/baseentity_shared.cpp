@@ -1704,7 +1704,9 @@ void CBaseEntity::FireBullets( const FireBulletsInfo_t &info )
 	bool bDoTracers = false;
 	
 	float flCumulativeDamage = 0.0f;
+#ifdef GAME_DLL
 	bool bDidTrigger = false;
+#endif
 
 	for (int iShot = 0; iShot < info.m_iShots; iShot++)
 	{

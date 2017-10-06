@@ -13,8 +13,6 @@
 #endif
 
 #include "clientmode_shared.h"
-#include <vgui_controls/EditablePanel.h>
-#include <vgui/Cursor.h>
 
 class CHudViewport;
 
@@ -37,6 +35,13 @@ public:
 
 	virtual void	Init();
 	virtual bool	ShouldDrawCrosshair( void );
+
+	virtual void	OnColorCorrectionWeightsReset( void );
+	virtual float	GetColorCorrectionScale( void ) const { return 1.0f; }
+	virtual void	ClearCurrentColorCorrection() { m_pCurrentColorCorrection = NULL; }
+
+private:
+	CHandle<C_ColorCorrection> m_pCurrentColorCorrection;
 };
 
 extern IClientMode *GetClientModeNormal();

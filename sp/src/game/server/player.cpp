@@ -454,7 +454,7 @@ BEGIN_DATADESC( CBasePlayer )
 
 	DEFINE_FIELD( m_nNumCrateHudHints, FIELD_INTEGER ),
 
-
+	DEFINE_FIELD( m_hColorCorrectionCtrl, FIELD_EHANDLE ),
 
 	// DEFINE_FIELD( m_nBodyPitchPoseParam, FIELD_INTEGER ),
 	// DEFINE_ARRAY( m_StepSoundCache, StepSoundCache_t,  2  ),
@@ -637,6 +637,8 @@ CBasePlayer::CBasePlayer( )
 
 	m_flLastUserCommandTime = 0.f;
 	m_flMovementTimeForUserCmdProcessingRemaining = 0.0f;
+
+	m_hColorCorrectionCtrl.Set( NULL );
 }
 
 CBasePlayer::~CBasePlayer( )
@@ -4486,6 +4488,27 @@ void CBasePlayer::ForceOrigin( const Vector &vecOrigin )
 	m_vForcedOrigin = vecOrigin;
 }
 
+//--------------------------------------------------------------------------------------------------------
+void CBasePlayer::OnTonemapTriggerStartTouch( CTonemapTrigger *pTonemapTrigger )
+{
+	m_hTriggerTonemapList.FindAndRemove( pTonemapTrigger );
+	m_hTriggerTonemapList.AddToTail( pTonemapTrigger );
+}
+
+
+//--------------------------------------------------------------------------------------------------------
+void CBasePlayer::OnTonemapTriggerEndTouch( CTonemapTrigger *pTonemapTrigger )
+{
+	m_hTriggerTonemapList.FindAndRemove( pTonemapTrigger );
+}
+
+
+//--------------------------------------------------------------------------------------------------------
+void CBasePlayer::UpdateTonemapController( void )
+{
+	m_hTonemapController = TheTonemapSystem()->GetMasterTonemapController();
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -4493,6 +4516,7 @@ void CBasePlayer::PostThink()
 {
 	m_vecSmoothedVelocity = m_vecSmoothedVelocity * SMOOTHING_FACTOR + GetAbsVelocity() * ( 1 - SMOOTHING_FACTOR );
 
+	UpdateTonemapController();
 	UpdateFXVolume();
 
 	if ( !g_fGameOver && !m_iPlayerLocked )
@@ -4919,6 +4943,7 @@ void CBasePlayer::Spawn( void )
 
 	// Initialize the fog and postprocess controllers.
 	InitFogController();
+	InitColorCorrectionController();
 
 	m_DmgTake		= 0;
 	m_DmgSave		= 0;
@@ -7556,6 +7581,7 @@ void CBasePlayer::HideViewModels( void )
 void CBasePlayer::UpdateFXVolume( void )
 {
 	CFogController *pFogController = NULL;
+	CColorCorrection* pColorCorrectionEnt = NULL;
 
 	Vector eyePos;
 	CBaseEntity *pViewEntity = GetViewEntity();
@@ -7572,10 +7598,16 @@ void CBasePlayer::UpdateFXVolume( void )
 	if ( pFogVolume )
 	{
 		pFogController = pFogVolume->GetFogController();
+		pColorCorrectionEnt = pFogVolume->GetColorCorrectionController();
 
 		if ( !pFogController )
 		{
 			pFogController = FogSystem()->GetMasterFogController();
+		}
+
+		if ( !pColorCorrectionEnt )
+		{
+			pColorCorrectionEnt = ColorCorrectionSystem()->GetMasterColorCorrection();
 		}
 	}
 	else if ( TheFogVolumes.Count() > 0 )
@@ -7583,11 +7615,17 @@ void CBasePlayer::UpdateFXVolume( void )
 		// If we're not in a fog volume, clear our fog volume, if the map has any.
 		// This will get us back to using the master fog controller.
 		pFogController = FogSystem()->GetMasterFogController();
+		pColorCorrectionEnt = ColorCorrectionSystem()->GetMasterColorCorrection();
 	}
 
 	if ( pFogController && m_Local.m_PlayerFog.m_hCtrl.Get() != pFogController )
 	{
 		m_Local.m_PlayerFog.m_hCtrl.Set( pFogController );
+	}
+
+	if ( pColorCorrectionEnt && m_hColorCorrectionCtrl.Get() != pColorCorrectionEnt )
+	{
+		m_hColorCorrectionCtrl.Set( pColorCorrectionEnt );
 	}
 }
 
@@ -7992,6 +8030,8 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropInt			( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
 		SendPropFloat		( SENDINFO( m_flLaggedMovementValue ), 0, SPROP_NOSCALE ),
 
+		SendPropEHandle		( SENDINFO( m_hTonemapController ) ),
+
 	END_SEND_TABLE()
 
 
@@ -8035,6 +8075,8 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 
 		// Data that only gets sent to the local player.
 		SendPropDataTable( "localdata", 0, &REFERENCE_SEND_TABLE(DT_LocalPlayerExclusive), SendProxy_SendLocalDataTable ),
+
+		SendPropEHandle( SENDINFO( m_hColorCorrectionCtrl ) ),
 
 	END_SEND_TABLE()
 
@@ -8718,7 +8760,16 @@ void CBasePlayer::InputSetHUDVisibility( inputdata_t &inputdata )
 void CBasePlayer::InputSetFogController( inputdata_t &inputdata )
 {
 	// Find the fog controller with the given name.
-	CFogController *pFogController = dynamic_cast<CFogController*>( gEntList.FindEntityByName( NULL, inputdata.value.String() ) );
+	CFogController *pFogController = NULL;
+	if ( inputdata.value.FieldType() == FIELD_EHANDLE )
+	{
+		pFogController = dynamic_cast<CFogController*>( inputdata.value.Entity().Get() );
+	}
+	else
+	{
+		pFogController = dynamic_cast<CFogController*>( gEntList.FindEntityByName( NULL, inputdata.value.String() ) );
+	}
+
 	if ( pFogController )
 	{
 		m_Local.m_PlayerFog.m_hCtrl.Set( pFogController );
@@ -8732,6 +8783,37 @@ void CBasePlayer::InitFogController( void )
 {
 	// Setup with the default master controller.
 	m_Local.m_PlayerFog.m_hCtrl = FogSystem()->GetMasterFogController();
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InputSetColorCorrectionController( inputdata_t &inputdata )
+{
+	// Find the fog controller with the given name.
+	CColorCorrection *pController = NULL;
+	if ( inputdata.value.FieldType() == FIELD_EHANDLE )
+	{
+		pController = dynamic_cast<CColorCorrection*>( inputdata.value.Entity().Get() );
+	}
+	else
+	{
+		pController = dynamic_cast<CColorCorrection*>( gEntList.FindEntityByName( NULL, inputdata.value.String() ) );
+	}
+
+	if ( pController )
+	{
+		m_hColorCorrectionCtrl.Set( pController );
+	}
+
+}
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void CBasePlayer::InitColorCorrectionController( void )
+{
+	m_hColorCorrectionCtrl = ColorCorrectionSystem()->GetMasterColorCorrection();
 }
 
 //-----------------------------------------------------------------------------
