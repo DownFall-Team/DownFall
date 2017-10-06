@@ -63,7 +63,11 @@
 	volumetricsquality(integer) 	: "Volumetrics quality" : 20 : ""
 	
 	lightcolor(color255)			: "Light Color" : "255 255 255 200" : "Light Color RGB-Intensity"
-	cameraspace(integer)			: "Camera Space" : 0 : "Angles are interpreted as being relative to camera."
+	cameraspace(Choices)			: "Camera Space" : 0 : "Angles are interpreted as being relative to camera." = 
+	[
+		0 : "No"
+		1 : "Yes"
+	]
 	
 	texturename(material)				: "Texture name" : ""
 
@@ -152,4 +156,10 @@
 	// Outputs
 	output OnTurnOn(void)				: "When we're turned on."
 	output OnTurnOff(void)				: "When we're turned off."
+]
+
+@SolidClass base( Targetname, EnableDisable ) = fog_volume : "An entity to control the fog in the map."
+[
+	FogName(target_destination) : "Fog Name" : : "The name of the fog entity associated with this volume."
+	ColorCorrectionName(target_destination) : "ColorCorrection Name" : : "The name of the color_correction entity associated with this volume."
 ]
