@@ -15,9 +15,9 @@ class CColorCorrection;
 
 //--------------------------------------------------------------------------------------------------------
 // Fog volume entity
-class CFogVolume : public CServerOnlyEntity
+class CFogVolume : public CBaseEntity
 {
-	DECLARE_CLASS( CFogVolume, CServerOnlyEntity );
+	DECLARE_CLASS( CFogVolume, CBaseEntity );
 	DECLARE_DATADESC();
 
 public:
