@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $NoKeywords: $
 //=============================================================================//
@@ -29,8 +29,6 @@ public:
 	virtual IMaterial *GetMaterial();
 
 private:
-	IMaterialVar *m_pAnimatedTextureVar;
-	IMaterialVar *m_pAnimatedTextureFrameNumVar;
 	IMaterialVar *m_pLightingVar;
 
 	CFloatInput m_flPupilCloseRate;
@@ -39,24 +37,8 @@ private:
 
 bool CPupilProxy::Init( IMaterial *pMaterial, KeyValues *pKeyValues )
 {
-	char const* pAnimatedTextureVarName = pKeyValues->GetString( "TextureVar" );
-	if( !pAnimatedTextureVarName )
-		return false;
-
 	bool foundVar;
-	m_pAnimatedTextureVar = pMaterial->FindVar( pAnimatedTextureVarName, &foundVar, false );
-	if( !foundVar )
-		return false;
-
-	char const* pAnimatedTextureFrameNumVarName = pKeyValues->GetString( "TextureFrameNumVar" );
-	if( !pAnimatedTextureFrameNumVarName )
-		return false;
-
-	m_pAnimatedTextureFrameNumVar = pMaterial->FindVar( pAnimatedTextureFrameNumVarName, &foundVar, false );
-	if( !foundVar )
-		return false;
-
-	m_pLightingVar = pMaterial->FindVar( "$lighting", &foundVar, false );
+	m_pLightingVar = pMaterial->FindVar( "$dilation", &foundVar, false );
 	if( !foundVar )
 	{
 		Warning("Materials using the pupil proxy must have a field called $lighting which has a value of 0.5!\n" );
@@ -71,20 +53,14 @@ bool CPupilProxy::Init( IMaterial *pMaterial, KeyValues *pKeyValues )
 
 void CPupilProxy::OnBind( C_BaseEntity *pBaseEntity )
 {
-	if (!pBaseEntity || !m_pAnimatedTextureVar )
+	if (!pBaseEntity )
 		return;
-
-	if( m_pAnimatedTextureVar->GetType() != MATERIAL_VAR_TYPE_TEXTURE )
-		return;
-
-	ITexture *pTexture = m_pAnimatedTextureVar->GetTextureValue();
-	int nFrameCount = pTexture->GetNumAnimationFrames();
 
 	// Compute the lighting at the eye position of the entity; use it to dialate the pupil
 	Vector forward;
 	pBaseEntity->GetVectors( &forward, NULL, NULL );
 
-	Vector eyePt = pBaseEntity->EyePosition();
+	const Vector& eyePt = pBaseEntity->EyePosition();
 	Vector color;
 	engine->ComputeLighting( eyePt, &forward, false, color );
 
@@ -94,7 +70,7 @@ void CPupilProxy::OnBind( C_BaseEntity *pBaseEntity )
 	float flLastIntensity = m_pLightingVar->GetFloatValue( );
 	if ( flIntensity > flLastIntensity )
 	{
-		float flMaxChange = m_flPupilCloseRate.GetFloat() * gpGlobals->frametime;
+		float flMaxChange = m_flPupilCloseRate.GetFloat() * gpGlobals->absoluteframetime;
 		if ( flIntensity > (flMaxChange + flLastIntensity) )
 		{
 			flIntensity = flLastIntensity + flMaxChange;
@@ -102,26 +78,22 @@ void CPupilProxy::OnBind( C_BaseEntity *pBaseEntity )
 	}
 	else
 	{
-		float flMaxChange = m_flPupilOpenRate.GetFloat() * gpGlobals->frametime;
+		float flMaxChange = m_flPupilOpenRate.GetFloat() * gpGlobals->absoluteframetime;
 		if ( flIntensity < (flLastIntensity - flMaxChange) )
 		{
 			flIntensity = flLastIntensity - flMaxChange;
 		}
 	}
 
-	int nFrame = nFrameCount * flIntensity;
-	nFrame = clamp( nFrame, 0, nFrameCount - 1 );
-
-	m_pAnimatedTextureFrameNumVar->SetIntValue( nFrame );
 	m_pLightingVar->SetFloatValue( flIntensity );
 }
 
 IMaterial *CPupilProxy::GetMaterial()
 {
-	if ( !m_pAnimatedTextureVar )
+	if ( !m_pLightingVar )
 		return NULL;
 
-	return m_pAnimatedTextureVar->GetOwningMaterial();
+	return m_pLightingVar->GetOwningMaterial();
 }
 
 EXPOSE_INTERFACE( CPupilProxy, IMaterialProxy, "Pupil" IMATERIAL_PROXY_INTERFACE_VERSION );

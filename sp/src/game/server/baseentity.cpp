@@ -5341,7 +5341,7 @@ public:
 		{
 			const char *target = "", *action = "Use";
 			variant_t value;
-			int delay = 0;
+			float delay = 0;
 
 			target = STRING( AllocPooledString(command.Arg( 1 ) ) );
 
@@ -5379,7 +5379,7 @@ public:
 			}
 			if ( command.ArgC() >= 5 )
 			{
-				delay = atoi( command.Arg( 4 ) );
+				delay = Q_atof( command.Arg( 4 ) );
 			}
 
 			g_EventQueue.AddEvent( target, action, value, delay, pPlayer, pPlayer );
