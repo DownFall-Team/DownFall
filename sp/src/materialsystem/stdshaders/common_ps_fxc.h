@@ -211,7 +211,7 @@ HALF4 EnvReflect( sampler envmapSampler,
 
 float CalcWaterFogAlpha( const float flWaterZ, const float flEyePosZ, const float flWorldPosZ, const float flProjPosZ, const float flFogOORange )
 {
-#if 0
+#if 1
 	// This version is what you use if you want a line-integral throught he water for water fog.
 //	float flDepthFromWater = flWaterZ - flWorldPosZ + 2.0f; // hackity hack . .this is for the DF_FUDGE_UP in view_scene.cpp
 	float flDepthFromWater = flWaterZ - flWorldPosZ;

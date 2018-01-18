@@ -128,6 +128,27 @@ public:
 #endif
 	}
 private:
+	int m_nPARALLAX_MAPPING;
+#ifdef _DEBUG
+	bool m_bPARALLAX_MAPPING;
+#endif
+public:
+	void SetPARALLAX_MAPPING( int i )
+	{
+		Assert( i >= 0 && i <= 0 );
+		m_nPARALLAX_MAPPING = i;
+#ifdef _DEBUG
+		m_bPARALLAX_MAPPING = true;
+#endif
+	}
+	void SetPARALLAX_MAPPING( bool i )
+	{
+		m_nPARALLAX_MAPPING = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bPARALLAX_MAPPING = true;
+#endif
+	}
+private:
 	int m_nFLASHLIGHTDEPTHFILTERMODE;
 #ifdef _DEBUG
 	bool m_bFLASHLIGHTDEPTHFILTERMODE;
@@ -218,6 +239,10 @@ public:
 #endif // _DEBUG
 		m_nDETAIL_BLEND_MODE = 0;
 #ifdef _DEBUG
+		m_bPARALLAX_MAPPING = false;
+#endif // _DEBUG
+		m_nPARALLAX_MAPPING = 0;
+#ifdef _DEBUG
 		m_bFLASHLIGHTDEPTHFILTERMODE = false;
 #endif // _DEBUG
 		m_nFLASHLIGHTDEPTHFILTERMODE = 0;
@@ -235,13 +260,13 @@ public:
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bNORMALMAP && m_bNORMALMAP2 && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAILTEXTURE && m_bDETAIL_BLEND_MODE && m_bFLASHLIGHTDEPTHFILTERMODE && m_bPHONG && m_bPHONGMASK;
+		bool bAllStaticVarsDefined = m_bNORMALMAP && m_bNORMALMAP2 && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAILTEXTURE && m_bDETAIL_BLEND_MODE && m_bPARALLAX_MAPPING && m_bFLASHLIGHTDEPTHFILTERMODE && m_bPHONG && m_bPHONGMASK;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 4 * m_nNORMALMAP ) + ( 12 * m_nNORMALMAP2 ) + ( 24 * m_nWORLDVERTEXTRANSITION ) + ( 48 * m_nSEAMLESS ) + ( 96 * m_nDETAILTEXTURE ) + ( 192 * m_nDETAIL_BLEND_MODE ) + ( 384 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 1152 * m_nPHONG ) + ( 2304 * m_nPHONGMASK ) + 0;
+		return ( 4 * m_nNORMALMAP ) + ( 12 * m_nNORMALMAP2 ) + ( 24 * m_nWORLDVERTEXTRANSITION ) + ( 48 * m_nSEAMLESS ) + ( 96 * m_nDETAILTEXTURE ) + ( 192 * m_nDETAIL_BLEND_MODE ) + ( 384 * m_nPARALLAX_MAPPING ) + ( 384 * m_nFLASHLIGHTDEPTHFILTERMODE ) + ( 1152 * m_nPHONG ) + ( 2304 * m_nPHONGMASK ) + 0;
 	}
 };
-#define shaderStaticTest_lightmappedadv_flashlight_ps20b psh_forgot_to_set_static_NORMALMAP + psh_forgot_to_set_static_NORMALMAP2 + psh_forgot_to_set_static_WORLDVERTEXTRANSITION + psh_forgot_to_set_static_SEAMLESS + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_DETAIL_BLEND_MODE + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_PHONG + psh_forgot_to_set_static_PHONGMASK + 0
+#define shaderStaticTest_lightmappedadv_flashlight_ps20b psh_forgot_to_set_static_NORMALMAP + psh_forgot_to_set_static_NORMALMAP2 + psh_forgot_to_set_static_WORLDVERTEXTRANSITION + psh_forgot_to_set_static_SEAMLESS + psh_forgot_to_set_static_DETAILTEXTURE + psh_forgot_to_set_static_DETAIL_BLEND_MODE + psh_forgot_to_set_static_PARALLAX_MAPPING + psh_forgot_to_set_static_FLASHLIGHTDEPTHFILTERMODE + psh_forgot_to_set_static_PHONG + psh_forgot_to_set_static_PHONGMASK + 0
 class lightmappedadv_flashlight_ps20b_Dynamic_Index
 {
 private:

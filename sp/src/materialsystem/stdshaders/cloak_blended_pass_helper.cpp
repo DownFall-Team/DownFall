@@ -7,7 +7,7 @@
 			"$cloakPassEnabled" "1"
 
 		#include "cloak_blended_pass_helper.h"
- 
+
 		In BEGIN_SHADER_PARAMS:
 			// Cloak Pass
 			SHADER_PARAM( CLOAKPASSENABLED, SHADER_PARAM_TYPE_BOOL, "0", "Enables cloak render in a second pass" )
@@ -34,8 +34,8 @@
  				info.m_nBumpTransform = BUMPTRANSFORM;
 			}
 
-			bool NeedsPowerOfTwoFrameBufferTexture( IMaterialVar **params, bool bCheckSpecificToThisFrame ) const 
-			{ 
+			bool NeedsPowerOfTwoFrameBufferTexture( IMaterialVar **params, bool bCheckSpecificToThisFrame ) const
+			{
 				if ( params[CLOAKPASSENABLED]->GetIntValue() ) // If material supports cloaking
 				{
 					if ( bCheckSpecificToThisFrame == false ) // For setting model flag at load time
@@ -46,7 +46,7 @@
 				}
 
 				// Check flag2 if not drawing cloak pass
-				return IS_FLAG2_SET( MATERIAL_VAR2_NEEDS_POWER_OF_TWO_FRAME_BUFFER_TEXTURE ); 
+				return IS_FLAG2_SET( MATERIAL_VAR2_NEEDS_POWER_OF_TWO_FRAME_BUFFER_TEXTURE );
 			}
 
 			bool IsTranslucent( IMaterialVar **params ) const
@@ -59,7 +59,7 @@
 				}
 
 				// Check flag if not drawing cloak pass
-				return IS_FLAG_SET( MATERIAL_VAR_TRANSLUCENT ); 
+				return IS_FLAG_SET( MATERIAL_VAR_TRANSLUCENT );
 			}
 
 		In SHADER_INIT_PARAMS()
@@ -202,7 +202,7 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
 #ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
+		if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 		{
 			// Vertex Shader
@@ -227,8 +227,10 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 #ifndef _X360
 		else
 		{
+			const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 			// The vertex shader uses the vertex id stream
-			SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
+			if ( bHasFastVertexTextures )
+				SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
 
 			// Vertex Shader
 			DECLARE_STATIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
@@ -264,14 +266,14 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 		// Reset render state manually since we're drawing from two materials
 		pShaderAPI->SetDefaultState();
 
-		// Set Vertex Shader Constants 
+		// Set Vertex Shader Constants
 		if ( ( bBumpMapping ) && ( info.m_nBumpTransform != -1 ) )
 		{
 			pShader->SetVertexShaderTextureTransform( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, info.m_nBumpTransform );
 		}
 
 #ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
+		if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 		{
 			// Set Vertex Shader Combos
@@ -292,15 +294,17 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 				SET_DYNAMIC_PIXEL_SHADER( cloak_blended_pass_ps20 );
 			}
 		}
-#ifndef _X360 
+#ifndef _X360
 		else
 		{
-			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
+			const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+			if ( bHasFastVertexTextures )
+				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
 
 			// Set Vertex Shader Combos
 			DECLARE_DYNAMIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bHasFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER( cloak_blended_pass_vs30 );
 
@@ -317,7 +321,7 @@ void DrawCloakBlendedPass( CBaseVSShader *pShader, IMaterialVar** params, IShade
 			pShader->BindTexture( SHADER_SAMPLER1, info.m_nBumpmap, info.m_nBumpFrame );
 		}
 
-		// Set Pixel Shader Constants 
+		// Set Pixel Shader Constants
 		float vEyePos[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		pShaderAPI->GetWorldSpaceCameraPosition( vEyePos );
 		pShaderAPI->SetPixelShaderConstant( 5, vEyePos, 1 );

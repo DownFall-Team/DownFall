@@ -138,13 +138,13 @@ float DoShadowNvidiaPCF3x3Box( sampler DepthSampler, const float4 shadowMapPos )
 //	4	20	33	20	4
 //	1	4	7	4	1
 //
-float DoShadowNvidiaPCF5x5Gaussian( sampler DepthSampler, const float4 shadowMapPos )
+float DoShadowNvidiaPCF5x5Gaussian( sampler DepthSampler, const float3 shadowMapPos )
 {
-	float fEpsilon    = 1.0f / 512.0f;
+	float fEpsilon    = 1.0f / 1024.0f;
 	float fTwoEpsilon = 2.0f * fEpsilon;
 
-	float ooW = 1.0f / shadowMapPos.w;								// 1 / w
-	float3 shadowMapCenter_objDepth = shadowMapPos.xyz * ooW;		// Do both projections at once
+	//float ooW = 1.0f / shadowMapPos.w;								// 1 / w
+	float3 shadowMapCenter_objDepth = shadowMapPos.xyz;// * ooW;		// Do both projections at once
 
 	float2 shadowMapCenter = shadowMapCenter_objDepth.xy;			// Center of shadow filter
 	float objDepth = shadowMapCenter_objDepth.z;					// Object depth in shadow space

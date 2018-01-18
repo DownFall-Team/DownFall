@@ -4,7 +4,7 @@
 //  STATIC: "DIFFUSEBUMPMAP"			"0..1"
 //  STATIC: "VERTEXCOLOR"				"0..1"
 //  STATIC: "VERTEXALPHATEXBLENDFACTOR"	"0..1"
-//  STATIC: "RELIEF_MAPPING"            "0..0"
+//  STATIC: "PARALLAX_MAPPING"          "0..0"
 //  STATIC: "SEAMLESS"                  "0..1"
 //  STATIC: "BUMPMASK"                  "0..1"
 //	STATIC: "FLASHLIGHT"				"0..1"	[XBOX]
@@ -78,7 +78,7 @@ struct VS_OUTPUT
 	float4 lightmapTexCoord3		: TEXCOORD3;			// and basetexcoord*mask_scale
 	float4 worldPos_projPosZ		: TEXCOORD4;
 
-#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 )
+#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 ) || PARALLAX_MAPPING
 	float3x3 tangentSpaceTranspose	: TEXCOORD5;	// and 6 and 7
 #endif
 
@@ -112,7 +112,7 @@ VS_OUTPUT main( const VS_INPUT v )
 	
 	float3 worldNormal = mul( vObjNormal, ( float3x3 )cModel[0] );
 	
-#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 )
+#if TANGENTSPACE || (LIGHTING_PREVIEW) || defined( _X360 ) || PARALLAX_MAPPING
 	float3 worldTangentS = mul( v.vTangentS, ( const float3x3 )cModel[0] );
 	float3 worldTangentT = mul( v.vTangentT, ( const float3x3 )cModel[0] );
 

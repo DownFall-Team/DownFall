@@ -37,18 +37,17 @@ float4 main( PS_INPUT i ) : COLOR
 {
 	float4 baseSample  = tex2D( BaseTextureSampler, i.baseTexCoord  );
 	float4 glintSample = tex2D( GlintSampler,       i.glintTexCoord );
-/*
+
 	// Dilate the pupil/iris texture (1 is max dilation, 0 is none)
 	float2 biasedCoords = i.irisTexCoord * 2.0f - 1.0f;								// -1 to +1 range
 	float fDilatability = saturate(0.8f - sqrt(dot(biasedCoords, biasedCoords) ));	// 1 in the center, fading out to 0 at 0.8 from center, since irises are inset into maps
 	float2 scaledCoords = biasedCoords * (1 + fDilatability);						// Maximal dilation
 	
 	// Blend undilated and maximally dilated based upon dilation factor
-	float2 dilatedCoords = lerp( scaledCoords, biasedCoords, 1.0f-saturate(cDilationFactor.x));	
+	float2 dilatedCoords = lerp( scaledCoords, biasedCoords, 1.0f-saturate(fDilationFactor));	
 	dilatedCoords = dilatedCoords * 0.5f + 0.5f;									// Back to 0..1 range
-*/
 
-	float4 irisSample = tex2D( IrisSampler, i.irisTexCoord );						// Sample the iris map using dilated coordinates
+	float4 irisSample = tex2D( IrisSampler, dilatedCoords );						// Sample the iris map using dilated coordinates
 
 	float4 result;
 	result.rgb = lerp( baseSample.rgb, irisSample.rgb, irisSample.a );

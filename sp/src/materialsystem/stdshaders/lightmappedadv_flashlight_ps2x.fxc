@@ -12,6 +12,7 @@
 // STATIC: "SEAMLESS"               	"0..1"
 // STATIC: "DETAILTEXTURE"             	"0..1"
 // STATIC: "DETAIL_BLEND_MODE"			"0..1"
+// STATIC: "PARALLAX_MAPPING"			"0..0"	[ps20b]
 // STATIC: "FLASHLIGHTDEPTHFILTERMODE"	"0..2"	[ps20b] [ps30] [PC]
 // STATIC: "PHONG"						"0..1"	[ps20b] [ps30]
 // STATIC: "PHONGMASK"					"0..3"	[ps20b] [ps30]
@@ -35,6 +36,8 @@ const float4 g_FlashlightAttenuation		: register( PSREG_FLASHLIGHT_ATTENUATION )
 const float4 g_DetailConstants				: register( c0 );
 const float4 g_FlashlightPos				: register( c1 );
 const float4 g_FresnelSpecParams			: register( PSREG_FRESNEL_SPEC_PARAMS );
+
+#define HEIGHT_SCALE		g_FlashlightPos.w
 
 #define g_SpecularExponent	g_EyePos.w
 #define g_FresnelRanges		g_FresnelSpecParams.xyz
@@ -94,6 +97,9 @@ struct PS_INPUT
 	float4 worldPos_worldTransition			: TEXCOORD5;	
 	float3 projPos							: TEXCOORD6;
 	float4 fogFactorW						: TEXCOORD7;
+#if PARALLAX_MAPPING
+	float3 tangentspace_eye_vector			: TEXCOORD8;
+#endif
 };
 
 
@@ -166,7 +172,18 @@ float4 main( PS_INPUT i ) : COLOR
 	baseTexCoords.xy = i.baseTexCoord.xy;
 #endif
 
-	GetBaseTextureAndNormal( BaseTextureSampler, BaseTextureSampler2, BumpMapSampler, bBase2, bBump, baseTexCoords, i.fogFactorW.xyz, baseColor, baseColor2, vNormal );
+	#if PARALLAX_MAPPING
+	{
+		float flParallaxLimit = length( i.tangentspace_eye_vector.xy ) / i.tangentspace_eye_vector.z;
+		float2 vOffset = normalize( -i.tangentspace_eye_vector.xy );
+		float CurHeight = 1.0;
+		float NewHeight = tex2D( BumpmapSampler, baseTexCoords.xy ).a;
+		vOffset *= min( 0.06, HEIGHT_SCALE * flParallaxLimit * ( CurHeight - NewHeight ) );
+		baseTexCoords.xy += vOffset;
+	}
+	#endif
+
+	GetBaseTextureAndNormal( BaseTextureSampler, BaseTextureSampler2, BumpMapSampler, bBase2, bBump, baseTexCoords, baseTexCoords.xy, i.fogFactorW.xyz, baseColor, baseColor2, vNormal );
 
 #if WORLDVERTEXTRANSITION
 	float lerpAlpha = i.worldPos_worldTransition.a;
@@ -283,8 +300,8 @@ float4 main( PS_INPUT i ) : COLOR
 	outColor += specularColor * fFresnel * vSpecMask * g_SpecularBoost;
 #endif
 
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.z, i.worldPos_worldTransition.z, i.projPos.z );
-	return FinalOutput( float4(outColor, baseColor.a) , fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos.xyz, i.worldPos_worldTransition.xyz, i.projPos.z );
+	return FinalOutput( float4(outColor, baseColor.a), fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_LINEAR );
 
 	// so we can jump over all of the above
 #if ( defined( _X360 ) )

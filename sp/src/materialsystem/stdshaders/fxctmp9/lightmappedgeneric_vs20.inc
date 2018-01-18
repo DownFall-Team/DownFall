@@ -128,24 +128,24 @@ public:
 #endif
 	}
 private:
-	int m_nRELIEF_MAPPING;
+	int m_nPARALLAX_MAPPING;
 #ifdef _DEBUG
-	bool m_bRELIEF_MAPPING;
+	bool m_bPARALLAX_MAPPING;
 #endif
 public:
-	void SetRELIEF_MAPPING( int i )
+	void SetPARALLAX_MAPPING( int i )
 	{
 		Assert( i >= 0 && i <= 0 );
-		m_nRELIEF_MAPPING = i;
+		m_nPARALLAX_MAPPING = i;
 #ifdef _DEBUG
-		m_bRELIEF_MAPPING = true;
+		m_bPARALLAX_MAPPING = true;
 #endif
 	}
-	void SetRELIEF_MAPPING( bool i )
+	void SetPARALLAX_MAPPING( bool i )
 	{
-		m_nRELIEF_MAPPING = i ? 1 : 0;
+		m_nPARALLAX_MAPPING = i ? 1 : 0;
 #ifdef _DEBUG
-		m_bRELIEF_MAPPING = true;
+		m_bPARALLAX_MAPPING = true;
 #endif
 	}
 private:
@@ -218,9 +218,9 @@ public:
 #endif // _DEBUG
 		m_nVERTEXALPHATEXBLENDFACTOR = 0;
 #ifdef _DEBUG
-		m_bRELIEF_MAPPING = false;
+		m_bPARALLAX_MAPPING = false;
 #endif // _DEBUG
-		m_nRELIEF_MAPPING = 0;
+		m_nPARALLAX_MAPPING = 0;
 #ifdef _DEBUG
 		m_bSEAMLESS = false;
 #endif // _DEBUG
@@ -235,13 +235,13 @@ public:
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bBUMPMASK;
+		bool bAllStaticVarsDefined = m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bPARALLAX_MAPPING && m_bSEAMLESS && m_bBUMPMASK;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 8 * m_nENVMAP_MASK ) + ( 16 * m_nTANGENTSPACE ) + ( 32 * m_nBUMPMAP ) + ( 64 * m_nDIFFUSEBUMPMAP ) + ( 128 * m_nVERTEXCOLOR ) + ( 256 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 512 * m_nRELIEF_MAPPING ) + ( 512 * m_nSEAMLESS ) + ( 1024 * m_nBUMPMASK ) + 0;
+		return ( 8 * m_nENVMAP_MASK ) + ( 16 * m_nTANGENTSPACE ) + ( 32 * m_nBUMPMAP ) + ( 64 * m_nDIFFUSEBUMPMAP ) + ( 128 * m_nVERTEXCOLOR ) + ( 256 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 512 * m_nPARALLAX_MAPPING ) + ( 512 * m_nSEAMLESS ) + ( 1024 * m_nBUMPMASK ) + 0;
 	}
 };
-#define shaderStaticTest_lightmappedgeneric_vs20 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DIFFUSEBUMPMAP + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_RELIEF_MAPPING + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK + 0
+#define shaderStaticTest_lightmappedgeneric_vs20 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DIFFUSEBUMPMAP + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_PARALLAX_MAPPING + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK + 0
 class lightmappedgeneric_vs20_Dynamic_Index
 {
 private:

@@ -15,7 +15,6 @@
 //	SKIP: $BASETEXTURE2NOENVMAP && ( !$BASETEXTURE2 || !$CUBEMAP )
 //	SKIP: $BASEALPHAENVMAPMASK && $BUMPMAP
 //  SKIP: $PARALLAXMAP && $DETAILTEXTURE
-//  SKIP: $SEAMLESS && $RELIEF_MAPPING
 //  SKIP: $SEAMLESS && $DETAILTEXTURE
 //  SKIP: $SEAMLESS && $MASKEDBLENDING
 //  SKIP: $BUMPMASK && ( $SEAMLESS || $DETAILTEXTURE || $SELFILLUM || $BASETEXTURENOENVMAP || $BASETEXTURE2 )
@@ -90,7 +89,8 @@ const float4 g_DetailTint_and_BlendFactor	: register( c8 );
 #define g_DetailTint (g_DetailTint_and_BlendFactor.rgb)
 #define g_DetailBlendFactor (g_DetailTint_and_BlendFactor.w)
 
-const HALF3 g_EyePos						: register( c10 );
+const float4 g_EyePos						: register( c10 );
+#define HEIGHT_SCALE g_EyePos.w
 const HALF4 g_FogParams						: register( c11 );
 const float4 g_TintValuesAndLightmapScale	: register( c12 );
 
@@ -161,14 +161,10 @@ struct PS_INPUT
 {
 #if SEAMLESS
 	float3 SeamlessTexCoord         : TEXCOORD0;            // zy xz
-	float4 detailOrBumpAndEnvmapMaskTexCoord : TEXCOORD1;   // envmap mask
 #else
 	HALF2 baseTexCoord				: TEXCOORD0;
-	// detail textures and bumpmaps are mutually exclusive so that we have enough texcoords.
-#if ( RELIEF_MAPPING == 0 )
-	HALF4 detailOrBumpAndEnvmapMaskTexCoord	: TEXCOORD1;
 #endif
-#endif
+	float4 detailOrBumpAndEnvmapMaskTexCoord : TEXCOORD1;   // envmap mask
 // CENTROID: TEXCOORD2
 	HALF4 lightmapTexCoord1And2		: TEXCOORD2;
 // CENTROID: TEXCOORD3
@@ -216,8 +212,38 @@ HALF4 main( PS_INPUT i ) : COLOR
 	baseTexCoords.xy = i.baseTexCoord.xy;
 #endif
 
+	#if ( DETAILTEXTURE == 1 )
+		HALF2 detailTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.xy;
+		HALF2 bumpmapTexCoord = i.baseTexCoord.xy;
+	#elif ( BUMPMASK == 1 )
+		HALF2 detailTexCoord = 0.0f;
+		HALF2 bumpmapTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.xy;
+		HALF2 bumpmap2TexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.wz;
+	#else
+		HALF2 detailTexCoord = 0.0f;
+		HALF2 bumpmapTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.xy;
+	#endif
+	
+	#if CUBEMAP || PARALLAX_MAPPING
+		float3 worldVertToEyeVector = g_EyePos.xyz - i.worldPos_projPosZ.xyz;
+	#endif
+	
+	#if PARALLAX_MAPPING
+	{
+		float3 tangentspace_eye_vector = mul( worldVertToEyeVector, transpose( i.tangentSpaceTranspose ) );
+		
+		float flParallaxLimit = length( tangentspace_eye_vector.xy ) / tangentspace_eye_vector.z;
+		float2 vOffset = normalize( -tangentspace_eye_vector.xy );
+		float CurHeight = 1.0;
+		float NewHeight = tex2D( BumpmapSampler, baseTexCoords.xy ).a;
+		vOffset *= min( 0.06, HEIGHT_SCALE * flParallaxLimit * ( CurHeight - NewHeight ) );
+		baseTexCoords.xy += vOffset;
+		bumpmapTexCoord.xy += vOffset;
+	}
+	#endif
+	
 	GetBaseTextureAndNormal( BaseTextureSampler, BaseTextureSampler2, BumpmapSampler, bBaseTexture2, bBumpmap || bNormalMapAlphaEnvmapMask, 
-		baseTexCoords, i.vertexColor.rgb, baseColor, baseColor2, vNormal );
+		baseTexCoords, bumpmapTexCoord, i.vertexColor.rgb, baseColor, baseColor2, vNormal );
 
 #if BUMPMAP == 1	// not ssbump
 	vNormal.xyz = vNormal.xyz * 2.0f - 1.0f;					// make signed if we're not ssbump
@@ -246,28 +272,8 @@ HALF4 main( PS_INPUT i ) : COLOR
 	}
 #endif
 
-#if RELIEF_MAPPING
-	// in the parallax case, all texcoords must be the same in order to free
-    // up an iterator for the tangent space view vector
-	HALF2 detailTexCoord = i.baseTexCoord.xy;
-	HALF2 bumpmapTexCoord = i.baseTexCoord.xy;
-	HALF2 envmapMaskTexCoord = i.baseTexCoord.xy;
-#else
-
-	#if ( DETAILTEXTURE == 1 )
-		HALF2 detailTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.xy;
-		HALF2 bumpmapTexCoord = i.baseTexCoord.xy;
-	#elif ( BUMPMASK == 1 )
-		HALF2 detailTexCoord = 0.0f;
-		HALF2 bumpmapTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.xy;
-		HALF2 bumpmap2TexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.wz;
-	#else
-		HALF2 detailTexCoord = 0.0f;
-		HALF2 bumpmapTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.xy;
-	#endif
 
 	HALF2 envmapMaskTexCoord = i.detailOrBumpAndEnvmapMaskTexCoord.wz;
-#endif // !RELIEF_MAPPING
 
 	HALF4 detailColor = HALF4( 1.0f, 1.0f, 1.0f, 1.0f );
 #if DETAILTEXTURE
@@ -527,7 +533,6 @@ HALF4 main( PS_INPUT i ) : COLOR
 #if CUBEMAP
 	if( bCubemap )
 	{
-		float3 worldVertToEyeVector = g_EyePos - i.worldPos_projPosZ.xyz;
 		float3 reflectVect = CalcReflectionVectorUnnormalized( worldSpaceNormal, worldVertToEyeVector );
 
 		// Calc Fresnel factor

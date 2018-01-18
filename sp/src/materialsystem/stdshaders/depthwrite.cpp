@@ -1,6 +1,6 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
-// Purpose: 
+// Purpose:
 //
 // $Header: $
 // $NoKeywords: $
@@ -91,7 +91,7 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 			pShaderShadow->EnableCulling( IS_FLAG_SET(MATERIAL_VAR_ALPHATEST) && !IS_FLAG_SET(MATERIAL_VAR_NOCULL) );
 
 #ifndef _X360
-			if ( !g_pHardwareConfig->HasFastVertexTextures() )
+			if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 			{
 				DECLARE_STATIC_VERTEX_SHADER( depthwrite_vs20 );
@@ -99,7 +99,7 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 				SET_STATIC_VERTEX_SHADER_COMBO( COLOR_DEPTH, nColorDepth );
 				SET_STATIC_VERTEX_SHADER_COMBO( TREESWAY, nTreeSwayMode );
 				SET_STATIC_VERTEX_SHADER( depthwrite_vs20 );
-				
+
 				if ( bAlphaClip || g_pHardwareConfig->PlatformRequiresNonNullPixelShaders() || nColorDepth )
 				{
 					if( bAlphaClip )
@@ -125,7 +125,9 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 #ifndef _X360
 			else
 			{
-				SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
+				const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+				if ( bHasFastVertexTextures )
+					SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
 
 				DECLARE_STATIC_VERTEX_SHADER( depthwrite_vs30 );
 				SET_STATIC_VERTEX_SHADER_COMBO( ONLY_PROJECT_POSITION, 0 ); //360 only combo, and this is a PC path
@@ -146,7 +148,7 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 		{
 
 #ifndef _X360
-			if ( !g_pHardwareConfig->HasFastVertexTextures() )
+			if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 			{
 				depthwrite_vs20_Dynamic_Index vshIndex;
@@ -183,11 +185,13 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 #ifndef _X360
 			else // 3.0 shader case (PC only)
 			{
-				SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
+				const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+				if ( bHasFastVertexTextures )
+					SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
 
 				depthwrite_vs30_Dynamic_Index vshIndex;
 				vshIndex.SetSKINNING( pShaderAPI->GetCurrentNumBones() > 0 );
-				vshIndex.SetMORPHING( pShaderAPI->IsHWMorphingEnabled() );
+				vshIndex.SetMORPHING( bHasFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
 				vshIndex.SetCOMPRESSED_VERTS( (int)vertexCompression );
 				pShaderAPI->SetVertexShaderIndex( vshIndex.GetIndex() );
 
@@ -251,7 +255,7 @@ BEGIN_VS_SHADER_FLAGS( DepthWrite, "Help for Depth Write", SHADER_NOT_EDITABLE )
 			// set up arbitrary far planes, as the real ones are too far ( 30,000 )
 //			pShaderAPI->SetPSNearAndFarZ( 1 );
 			vParms.x = 7.0f;		// arbitrary near
-			vParms.y = 4000.0f;		// arbitrary far 
+			vParms.y = 4000.0f;		// arbitrary far
 			vParms.z = 0.0f;
 			vParms.w = 0.0f;
 			pShaderAPI->SetPixelShaderConstant( 1, vParms.Base(), 2 );
