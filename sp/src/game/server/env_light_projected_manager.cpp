@@ -24,24 +24,30 @@ public:
 
 	// Always transmit to clients
 	virtual int UpdateTransmitState();
+
+private:
+	CNetworkVar( int, m_nMaxShadowingLights );
 };
 
-LINK_ENTITY_TO_CLASS(env_light_projected_manager, CEnvLightProjectedManager);
+LINK_ENTITY_TO_CLASS( env_light_projected_manager, CEnvLightProjectedManager );
 
 BEGIN_DATADESC( CEnvLightProjectedManager )
+	DEFINE_KEYFIELD( m_nMaxShadowingLights, FIELD_INTEGER, "shadowingLights" )
 END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST( CEnvLightProjectedManager, DT_EnvLightProjectedManager )
+	SendPropInt( SENDINFO( m_nMaxShadowingLights ), 32, SPROP_UNSIGNED ),
 END_SEND_TABLE()
 
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CEnvLightProjectedManager::CEnvLightProjectedManager(void)
+CEnvLightProjectedManager::CEnvLightProjectedManager( void )
 {
+	m_nMaxShadowingLights = 4;
 }
 
 int CEnvLightProjectedManager::UpdateTransmitState()
 {
-	return SetTransmitState(FL_EDICT_ALWAYS);
+	return SetTransmitState( FL_EDICT_ALWAYS );
 }
