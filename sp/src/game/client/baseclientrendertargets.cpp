@@ -84,5 +84,7 @@ void CBaseClientRenderTargets::ShutdownClientRenderTargets()
 	m_CameraTexture.Shutdown();
 }
 
+#if 0
 static CBaseClientRenderTargets g_RenderTargets;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR( CBaseClientRenderTargets, IClientRenderTargets, CLIENTRENDERTARGETS_INTERFACE_VERSION, g_RenderTargets );
+#endif

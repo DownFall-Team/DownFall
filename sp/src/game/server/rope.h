@@ -37,8 +37,7 @@ public:
 		const char *pMaterialName = "cable/cable.vmt",		// Note: whoever creates the rope must
 															// use PrecacheModel for whatever material
 															// it specifies here.
-		int numSegments = 5,
-		const char *pClassName = "keyframe_rope"
+		int numSegments = 5
 		);
 
 	static CRopeKeyframe* CreateWithSecondPointDetached(
@@ -50,8 +49,7 @@ public:
 															// use PrecacheModel for whatever material
 															// it specifies here.
 		int numSegments = 5,
-		bool bInitialHang = false,
-		const char *pClassName = "keyframe_rope"
+		bool bInitialHang = false
 		);
 
 	bool		SetupHangDistance( float flHangDist );
@@ -105,8 +103,9 @@ public:
 	// Toggle wind.
 	void			EnableWind( bool bEnable );
 
-	CBaseEntity*	GetStartPoint() { return m_hStartPoint.Get(); }
-	int				GetStartAttachment() { return m_iStartAttachment; };
+	// Unless this is called during initialization, the caller should have done
+	// PrecacheModel on whatever material they specify in here.
+	void			SetMaterial( const char *pName );
 
 	CBaseEntity*	GetEndPoint() { return m_hEndPoint.Get(); }
 	int				GetEndAttachment() { return m_iEndAttachment; };
@@ -122,18 +121,13 @@ public:
 	virtual void NotifyPositionChanged( CBaseEntity *pEntity );
 
 private:
-	// Unless this is called during initialization, the caller should have done
-	// PrecacheModel on whatever material they specify in here.
-	void			SetMaterial( const char *pName );
 
-protected:
 	void			SetAttachmentPoint( CBaseHandle &hOutEnt, short &iOutAttachment, CBaseEntity *pEnt, int iAttachment );
 
 	// This is normally called by Activate but if you create the rope at runtime,
 	// you must call it after you have setup its variables.
-	virtual void	Init();
+	void			Init();
 
-private:
 	// These work just like the client-side versions.
 	bool			GetEndPointPos2( CBaseEntity *pEnt, int iAttachment, Vector &v );
 	bool			GetEndPointPos( int iPt, Vector &v );
@@ -158,9 +152,6 @@ public:
 	// Number of subdivisions in between segments.
 	CNetworkVar( int, m_Subdiv );
 	
-	// Used simply to wake up rope on the client side if it has gone to sleep
-	CNetworkVar( unsigned char, m_nChangeCount );
-
 	//EHANDLE		m_hNextLink;
 	
 	CNetworkVar( int, m_RopeLength );	// Rope length at startup, used to calculate tension.

@@ -1,0 +1,93 @@
+// DYNAMIC: "INTENSITY"				"0..4"	//5 intensity levels, that set the ray distance.
+
+// Includes
+#include "common_ps_fxc.h"
+
+// Samplers
+sampler _Sampler_00		: register( s0 );
+
+// Constants
+const float3 g_cData_sun_data		: register( c0 ); 		// Callback
+const float3 g_cData_sun_color		: register( c1 ); 		// Callback
+
+// Semantic structures
+struct PS_INPUT
+{
+	float2 vTexCoord_0			:	TEXCOORD0;
+};
+
+struct PS_OUTPUT
+{
+	float4 vColor_0				:	COLOR0;
+};
+
+// Entry point
+PS_OUTPUT main( const PS_INPUT In )
+{
+	PS_OUTPUT Out;
+
+//variable intensity levels.
+#if ( INTENSITY == 0 )
+	float _rayStrength = 0.5f;	//LOW
+#endif
+#if ( INTENSITY == 1 )
+	float _rayStrength = 0.75f;	//MEDIUM
+#endif
+#if ( INTENSITY == 2 )
+	float _rayStrength = 1.0f;	//NORMAL
+#endif
+#if ( INTENSITY == 3 )
+	float _rayStrength = 1.6f;	//OVERBRIGHT
+#endif
+#if ( INTENSITY == 4 )
+	float _rayStrength = 5.0f;	//HOLOCAUST
+#endif
+
+	float3 _var0 = float3( 0.000000, 0.000000, 0.000000 );
+	float2 _var1 = In.vTexCoord_0;
+
+	float2 _sunPos = In.vTexCoord_0 - g_cData_sun_data.xy;
+	_sunDot = saturate( g_cData_sun_data.z );
+	float _var5 = length( _sunPos );
+	float2 _var6 = _sunPos;// / _var5;
+	//float _var7 = smoothstep( float( 0.000000 ), float( 0.700000 ), _var5 );
+	//_var6 = _var6 * _var7;
+	//_var6 = _var6 * float( 0.011000 );
+	
+	float illuminationDecay = 1.0;
+	int NUM_SAMPLES = 30;
+	float density = 0.84f;
+	float exposure = 0.0034f;
+	float decay = 1.0f;
+	float weight = 5.65f;
+	float strength = 0.5;
+	
+	float sunDist = saturate( _sunDot ) * saturate( 1 - saturate( length( _sunPos ) * strength ) );
+
+	_var6 *= 1.0 /  float(NUM_SAMPLES) * density;
+	_var6 *= _var5 + 0.5;
+	for ( int _var8 = 0; _var8 < NUM_SAMPLES; _var8++ )
+	{
+		_rayStrength = _rayStrength * float( 0.950000 );
+		_var1 = _var1 - _var6;
+		float4 _texLookup_26 = tex2D( _Sampler_00, _var1 );
+		//sampleColor = sampleColor * _texLookup_26.a;
+		sampleColor = _texLookup_26.rgb * _rayStrength * _texLookup_26.a;
+
+		sampleColor.rgb *= illuminationDecay * weight;
+
+        illuminationDecay *= decay;
+		_var0 += sampleColor;
+	}
+
+	// OUT.Color = accum * 2  * float4(sunDist.xxx, 1);
+	// OUT.Color.w += 1.0 - saturate( saturate( fSign * 0.1 + 0.9 ) );
+
+	//_var0 = _var0 * float( 0.060000 );
+	_var0 *= exposure;
+	_var0 = _var0 * 2 * float4(sunDist.xxx, 1);
+
+	Out.vColor_0 = float4( _var0, 1.000000 );
+	Out.vColor_0.rgb *= g_cData_sun_color;
+	return Out;
+}

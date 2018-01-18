@@ -102,6 +102,8 @@ static ConVar cl_maxrenderable_dist("cl_maxrenderable_dist", "3000", FCVAR_CHEAT
 
 ConVar r_entityclips( "r_entityclips", "1" ); //FIXME: Nvidia drivers before 81.94 on cards that support user clip planes will have problems with this, require driver update? Detect and disable?
 
+ConVar r_post_sunshaft("r_post_sunshaft", "0", FCVAR_ARCHIVE);
+
 // Matches the version in the engine
 static ConVar r_drawopaqueworld( "r_drawopaqueworld", "1", FCVAR_CHEAT );
 static ConVar r_drawtranslucentworld( "r_drawtranslucentworld", "1", FCVAR_CHEAT );
@@ -177,6 +179,7 @@ static void FogOverrideCallback( IConVar *pConVar, char const *pOldString, float
 	}
 }
 
+extern void UpdateViewMask(const CViewSetup &view, bool VIEWMODEL, bool combine);
 
 //-----------------------------------------------------------------------------
 // Water-related convars
@@ -830,6 +833,10 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
 	CLIENTEFFECT_MATERIAL( "dev/engine_post" )
 	CLIENTEFFECT_MATERIAL( "dev/motion_blur" )
 	CLIENTEFFECT_MATERIAL( "dev/upscale" )
+
+	CLIENTEFFECT_MATERIAL( "dev/sunrays_to_screen" )
+	CLIENTEFFECT_MATERIAL( "dev/sunrayblurx" )
+	CLIENTEFFECT_MATERIAL( "dev/sunrayblury" )
 
 #ifdef TF_CLIENT_DLL
 	CLIENTEFFECT_MATERIAL( "dev/pyro_blur_filter_y" )
@@ -2065,6 +2072,8 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		// Must be first 
 		render->SceneBegin();
 
+		g_pColorCorrectionMgr->UpdateColorCorrection();
+
 		pRenderContext.GetFrom( materials );
 		pRenderContext->TurnOnToneMapping();
 		pRenderContext.SafeRelease();
@@ -2080,6 +2089,9 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 		if ( ( bDrew3dSkybox = pSkyView->Setup( view, &nClearFlags, &nSkyboxVisible ) ) != false )
 		{
 			AddViewToScene( pSkyView );
+			VPROF_SCOPE_BEGIN("UpdateViewMask::SkyMask[0]");
+			UpdateViewMask(view, false, false);	//UPDATE SKY MASK
+			VPROF_SCOPE_END();
 		}
 		SafeRelease( pSkyView );
 
@@ -2134,8 +2146,22 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 		GetClientModeNormal()->DoPostScreenSpaceEffects( &view );
 
+		// steve - do we even need the viewmask stuff anymore when rendering with depth?
+		// Steve - the viewmask is perf poopy, needs a rewrite
+		VPROF_SCOPE_BEGIN("UpdateViewMask::ViewModel[0]");
+		UpdateViewMask(view, true, false);
+		VPROF_SCOPE_END();
+
 		// Now actually draw the viewmodel
 		DrawViewModels( view, whatToDraw & RENDERVIEW_DRAWVIEWMODEL );
+
+		VPROF_SCOPE_BEGIN("UpdateViewMask::SkyMask[1]");
+		UpdateViewMask(view, false, bDrew3dSkybox);		//COMBINE SKY MASK
+		VPROF_SCOPE_END();
+		VPROF_SCOPE_BEGIN("UpdateViewMask::ViewModel[1]");
+		UpdateViewMask(view, true, true);
+		VPROF_SCOPE_END();
+
 
 		DrawUnderwaterOverlay();
 
@@ -2173,6 +2199,13 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 			}
 			pRenderContext.SafeRelease();
 		}
+
+		// Steve - custom effects here.
+		if (!building_cubemaps.GetBool() && view.m_bDoBloomAndToneMapping)	
+			DoCustomPostProcessing(view);
+
+		// Prevent sound stutter if going slow
+		engine->Sound_ExtraUpdate();
 
 		// And here are the screen-space effects
 
@@ -4877,7 +4910,7 @@ void CSkyboxView::DrawInternal( view_id_t iSkyBoxViewID, bool bInvokePreAndPostR
 	}
 
 	render->BeginUpdateLightmaps();
-	BuildWorldRenderLists( true, true, -1 );
+	BuildWorldRenderLists( true, -1, true );
 	BuildRenderableRenderLists( iSkyBoxViewID );
 	render->EndUpdateLightmaps();
 

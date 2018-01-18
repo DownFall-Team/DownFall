@@ -67,8 +67,10 @@ public:
 					~C_Sun();
 
 	virtual void	OnDataChanged( DataUpdateType_t updateType );
+	virtual void UpdateOnRemove( void );
 
 public:
+	static C_Sun *Get() { return m_pSun; }
 	C_SunGlowOverlay	m_Overlay;
 	C_SunGlowOverlay	m_GlowOverlay;
 	
@@ -77,9 +79,20 @@ public:
 	int					m_nOverlaySize;
 	Vector				m_vDirection;
 	bool				m_bOn;
-
+	byte				m_RayStrength;
+	
+	int					m_HorzSize;
+	int					m_VertSize;
+	int					m_OverlayHorzSize;
+	int					m_OverlayVertSize;
+	int					m_nLayers;
+	
 	int					m_nMaterial;
 	int					m_nOverlayMaterial;
+	Vector				m_vOverlayColor;
+
+private:
+	static C_Sun *m_pSun;
 };
 
 

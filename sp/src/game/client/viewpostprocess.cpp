@@ -18,6 +18,8 @@
 #include "bitmap/tgawriter.h"
 #include "filesystem.h"
 #include "tier0/vprof.h"
+#include "c_sun.h"
+#include "ivieweffects.h"
 
 #include "proxyentity.h"
 
@@ -2999,4 +3001,104 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 			}
 		}
 	}
+}
+
+
+// Steve - screen space Volumetrics 
+// Dont expect miracles, I didnt have time to finish to a standard that I would have liked.
+
+const Vector &CurrentViewOrigin();
+const Vector &CurrentViewForward();
+
+
+ConVar r_suneffects("r_suneffects", "1", FCVAR_ARCHIVE);
+ConVar r_suneffects_blur("r_suneffects_blur", "1", FCVAR_ARCHIVE);
+
+static CMaterialReference s_pSunRaysMaterial;
+
+ConVar r_sunray_override("r_sunray_override", "-1", FCVAR_CHEAT, "override sunray strength for testing", true, -1, true, 5);
+bool DoSunAndGlowEffects( int x, int y, int w, int h )
+{
+	if ( !r_suneffects.GetBool() )
+		return false;
+
+	//Steve; uhm..
+	CMatRenderContextPtr pRenderContext( materials );
+	if ( !s_pSunRaysMaterial.IsValid() )
+	{
+		// Create dummy material KV data
+		KeyValues *kv = new KeyValues( "ss_sunrays" );
+		kv->SetInt( "$ignorez", 1 );
+		kv->SetInt( "$nofog", 1 );
+		s_pSunRaysMaterial.Init( g_pMaterialSystem->CreateMaterial( "sunrays", kv ) );
+		s_pSunRaysMaterial->Refresh();
+	}
+
+	if ( C_Sun::Get() && engine->IsSkyboxVisibleFromPoint( CurrentViewOrigin() ) )
+	{
+		//these 4 lookups are common, you know, I could just make all of this static...
+		IMaterial *xblurMat = materials->FindMaterial( "dev/sunrayblurx", TEXTURE_GROUP_OTHER, true );
+		IMaterial *yblurMat = materials->FindMaterial( "dev/sunrayblury", TEXTURE_GROUP_OTHER, true );
+		IMaterial *sunToScreen = materials->FindMaterial( "dev/sunrays_to_screen", TEXTURE_GROUP_OTHER, true );
+
+		ITexture *dest_rt0 = GetSmallBuffer0();
+		ITexture *dest_rt1 = GetSmallBuffer1();
+
+		ITexture *pSkyMask = materials->FindTexture( "_rt_SkyMask", TEXTURE_GROUP_RENDER_TARGET );
+		const int nMaskWidth = pSkyMask->GetActualWidth();
+		const int nMaskHeight = pSkyMask->GetActualHeight();
+
+		C_Sun* const thesun = C_Sun::Get();
+		int sunscale = thesun->m_RayStrength;
+		if ( r_sunray_override.GetInt() != -1 )
+			sunscale = r_sunray_override.GetInt();
+
+		Vector screenVec;
+
+		Vector sunDir = thesun->m_vDirection;
+		sunDir.NormalizeInPlace();
+
+		if ( ScreenTransform( CurrentViewOrigin() + sunDir * 512, screenVec ) )
+			ScreenTransform( ( CurrentViewOrigin() - sunDir * 512 ), screenVec );
+		screenVec = screenVec * Vector( 0.5f, -0.5f, 0 ) + Vector( 0.5f, 0.5f, 0 );
+
+		byte tmp, alpha;
+		bool modulate;
+		vieweffects->GetFadeParams( &tmp, &tmp, &tmp, &alpha, &modulate );
+
+		DF_SetMaterialVarTexture( s_pSunRaysMaterial, "$basetexture", pSkyMask );
+		DF_SetMaterialVarFloat( s_pSunRaysMaterial, "$sunx", screenVec.x );
+		DF_SetMaterialVarFloat( s_pSunRaysMaterial, "$suny", screenVec.y );
+		DF_SetMaterialVarFloat( s_pSunRaysMaterial, "$sunz", DotProduct( thesun->m_vDirection, CurrentViewForward() ) );
+		DF_SetMaterialVarVector( s_pSunRaysMaterial, "$suncolor", !modulate && alpha > 0 ? thesun->m_vOverlayColor * ( 1.f - alpha / 255.f ) : thesun->m_vOverlayColor );
+		DF_SetMaterialVarInt( s_pSunRaysMaterial, "$sunscale", clamp( sunscale, 0, 4 ) );
+
+		pRenderContext->PushRenderTargetAndViewport();
+
+		//render skymask into srt0..with sunrays shader
+		SetRenderTargetAndViewPort( dest_rt0 );
+
+		// So here we are rendering the sunrays into the SMAll FB0 , but we render at skymask height, which doesnt match the dest
+		// mask is 128
+		// dest_rt0 is
+		pRenderContext->DrawScreenSpaceRectangle( s_pSunRaysMaterial, 0, 0, nMaskWidth, nMaskHeight, 0, 0, dest_rt0->GetActualWidth() - 1, dest_rt0->GetActualHeight() - 1, dest_rt0->GetActualWidth(), dest_rt0->GetActualHeight() );
+		if ( r_suneffects_blur.GetBool() )
+		{
+			//Gaussian blur x srt0 to srt1
+			SetRenderTargetAndViewPort( dest_rt1 );
+			pRenderContext->DrawScreenSpaceRectangle( xblurMat, 0, 0, nMaskWidth, nMaskHeight, 0, 0, dest_rt1->GetActualWidth() - 1, dest_rt1->GetActualHeight() - 1, dest_rt1->GetActualWidth(), dest_rt1->GetActualHeight() );
+
+			//Gaussian blur y srt1 to srt0
+			SetRenderTargetAndViewPort( dest_rt0 );
+			pRenderContext->DrawScreenSpaceRectangle( yblurMat, 0, 0, nMaskWidth, nMaskHeight, 0, 0, dest_rt0->GetActualWidth() - 1, dest_rt0->GetActualHeight() - 1, dest_rt0->GetActualWidth(), dest_rt0->GetActualHeight() );
+
+		}
+
+		pRenderContext->PopRenderTargetAndViewport();
+		
+		pRenderContext->DrawScreenSpaceRectangle( sunToScreen, 0, 0, w, h, 0.0f, -0.5f, dest_rt0->GetActualWidth() - 1, dest_rt0->GetActualHeight() - 1, dest_rt0->GetActualWidth(), dest_rt0->GetActualHeight() );
+		
+		return true;	//we rendered.
+	}
+	return false;
 }
