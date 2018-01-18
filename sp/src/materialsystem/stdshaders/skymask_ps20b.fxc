@@ -1,0 +1,52 @@
+// STATIC: "DRAWWHITE"		"0..1"
+// STATIC: "COMBINE"		"0..2"
+// STATIC: "VIEWMODEL"		"0..1"
+
+// Includes
+#include "common_ps_fxc.h"
+
+#if COMBINE > 0
+sampler srcTex				: register( s0 );
+#endif
+#if (COMBINE == 2)
+sampler orgMask				: register( s1 );
+#endif
+
+struct PS_INPUT
+{
+#if COMBINE > 0
+	float2 vTexCoord			:	TEXCOORD0;
+#endif
+};
+
+struct PS_OUTPUT
+{
+	float4 vColor				: COLOR0;
+};
+
+// Entry point
+PS_OUTPUT main( const PS_INPUT In )
+{
+	PS_OUTPUT Out;
+
+#if DRAWWHITE
+	Out.vColor = 1.0f;
+#else
+	Out.vColor = 0.0f;
+#endif
+
+#if COMBINE && DRAWWHITE
+	float alphaold = tex2D( srcTex, In.vTexCoord ).a;
+	Out.vColor = min( Out.vColor, alphaold );
+#endif
+
+//if we're drawing white and combine is 2 (ie: view model, mask; which is similar to skymask, where the view model is black, and everything else is white..)
+//then we take the skymask.. and anywhere that the skymask drew white (non-sky is black)
+//we convert to black (masked out)
+#if ( COMBINE == 2 ) && DRAWWHITE
+	float orgAlpha = tex2D( orgMask, In.vTexCoord ).a;
+	if ( orgAlpha > 0 )
+		Out.vColor.a = 0;
+#endif
+	return Out;
+}
