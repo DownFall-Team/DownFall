@@ -185,7 +185,7 @@ bool Impact( Vector &vecOrigin, Vector &vecStart, int iMaterial, int iDamageType
 		return false;
 
 	Vector tmp;
-	if ( IMaterial* const material = engine->TraceLineMaterialAndLighting( tr.startpos, tr.endpos, tmp, tmp ) )
+	if ( IMaterial* const material = engine->TraceLineMaterialAndLighting( tr.startpos, traceExt, tmp, tmp ) )
 	{
 		bool found;
 		IMaterialVar* const var = material->FindVar( "$decalParticle", &found, false );
