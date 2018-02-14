@@ -126,6 +126,14 @@ $Project "Client (Downfall)"
 			$File	"hl2\vgui_rootpanel_hl2.cpp"
 			$File	"episodic\c_npc_puppet.cpp"
 		}
+
+		$Folder	"Downfall"
+		{
+			$File	"downfall\df_render_targets.cpp"
+			$File	"downfall\df_screeneffects.cpp"
+			$File	"downfall\df_view_scene.cpp"
+			$File	"downfall\vis_tester.cpp"
+			$File	"downfall\worldlight.cpp"
+		}
 	}
-	
 }
