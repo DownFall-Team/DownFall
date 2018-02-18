@@ -1,10 +1,10 @@
-#include "cbase.h"
-
 #ifndef C_ENV_LIGHT_PROJECTED_H
 #define C_ENV_LIGHT_PROJECTED_H
 #ifdef _WIN32
 #pragma once
 #endif
+
+#include "c_baseentity.h"
 
 class C_EnvLightProjected : public C_BaseEntity
 {
@@ -19,8 +19,6 @@ public:
 
 	virtual void ClientThink();
 
-	void	UpdateLightSettings( const CCommand &args );
-
 	void	UpdateLight( bool bForceUpdate );
 
 	Vector  GetLightOrigin();
@@ -29,7 +27,7 @@ public:
 	bool	IsFineWithoutShadows();
 	bool	IsLightOn();
 
-	void	SetManagerShadowState(bool state);
+	void	SetManagerShadowState( bool state );
 
 	C_EnvLightProjected();
 	~C_EnvLightProjected();
@@ -62,7 +60,7 @@ private:
 	float	m_flPatternBrightnessModifier;
 	int		m_iPatternIndex;
 	CTextureReference m_SpotlightTexture;
-	char	m_SpotlightTextureName[ MAX_PATH ];
+	char	m_SpotlightTextureName[MAX_PATH];
 	char	m_szPattern[64];
 	int		m_nSpotlightTextureFrame;
 	int		m_nShadowQuality;

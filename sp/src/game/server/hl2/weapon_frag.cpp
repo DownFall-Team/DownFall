@@ -458,7 +458,7 @@ void CWeaponFrag::RollGrenade( CBasePlayer *pPlayer )
 		CrossProduct( vecFacing, tr.plane.normal, tangent );
 		CrossProduct( tr.plane.normal, tangent, vecFacing );
 	}
-	vecSrc += (vecFacing * 18.0);
+	vecSrc += vecFacing;
 	CheckThrowPosition( pPlayer, pPlayer->WorldSpaceCenter(), vecSrc );
 
 	Vector vecThrow;

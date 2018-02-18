@@ -134,7 +134,7 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 			}
 
 			pShaderShadow->EnableDepthWrites( false );
-			pShader->EnableAlphaBlending( SHADER_BLEND_ONE, SHADER_BLEND_ONE ); // Write over the eyes that were already there 
+			pShader->EnableAlphaBlending( SHADER_BLEND_ONE, SHADER_BLEND_ONE ); // Write over the eyes that were already there
 			pShaderShadow->EnableTexture( SHADER_SAMPLER5, true );	// Flashlight cookie
 		}
 
@@ -246,7 +246,7 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 		pShader->BindTexture( SHADER_SAMPLER1, info.m_nIris, info.m_nIrisFrame );
 		pShader->BindTexture( SHADER_SAMPLER2, info.m_nEnvmap );
 		pShader->BindTexture( SHADER_SAMPLER3, info.m_nAmbientOcclTexture );
-	
+
 		if ( bDiffuseWarp )
 		{
 			if ( r_lightwarpidentity.GetBool() )
@@ -278,7 +278,7 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 		}
 
 #ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
+		if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 		{
 			DECLARE_DYNAMIC_VERTEX_SHADER( eye_refract_vs20 );
@@ -293,7 +293,9 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 #ifndef _X360
 		else
 		{
-			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, SHADER_VERTEXTEXTURE_SAMPLER0 );
+			const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+			if ( bHasFastVertexTextures )
+				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_10, VERTEX_SHADER_SHADER_SPECIFIC_CONST_11, SHADER_VERTEXTEXTURE_SAMPLER0 );
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( eye_refract_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
@@ -301,7 +303,7 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( DYNAMIC_LIGHT, lightState.HasDynamicLight() );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( STATIC_LIGHT, lightState.m_bStaticLight ? 1 : 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( NUM_LIGHTS, lightState.m_nNumLights );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bHasFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER( eye_refract_vs30 );
 		}
@@ -353,7 +355,7 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 
 		// Flashlight tax
 #ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
+		if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 		{
 			if ( g_pHardwareConfig->SupportsPixelShaders_2_b() )
@@ -434,7 +436,7 @@ void Draw_Eyes_Refract_Internal( CBaseVSShader *pShader, IMaterialVar** params, 
 			{
 				params[info.m_nEntityOrigin]->GetVecValue( timeVec, 3 );
 			}
-			pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, timeVec, 1 );
+			pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_5, timeVec, 1 );
 		}
 	}
 	pShader->Draw();

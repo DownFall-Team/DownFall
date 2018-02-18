@@ -95,6 +95,8 @@ void RagdollImpactCallback( const CEffectData &data )
 
 DECLARE_CLIENT_EFFECT( "RagdollImpact", RagdollImpactCallback );
 
+static void SetImpactControlPoint( CNewParticleEffect *pEffect, int nPoint, const Vector &vecImpactPoint, const Vector &vecForward, C_BaseEntity *pEntity );
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -181,6 +183,40 @@ bool Impact( Vector &vecOrigin, Vector &vecStart, int iMaterial, int iDamageType
 	bool bReportRagdollImpacts = (nFlags & IMPACT_REPORT_RAGDOLL_IMPACTS) != 0;
 	if ( ( tr.fraction == 1.0f ) || ( bHitRagdoll && !bReportRagdollImpacts ) )
 		return false;
+
+	Vector tmp;
+	if ( IMaterial* const material = engine->TraceLineMaterialAndLighting( tr.startpos, traceExt, tmp, tmp ) )
+	{
+		bool found;
+		IMaterialVar* const var = material->FindVar( "$decalParticle", &found, false );
+		if ( found && var->GetType() == MATERIAL_VAR_TYPE_STRING )
+		{
+			CSmartPtr<CNewParticleEffect> pEffect = CNewParticleEffect::Create( NULL, var->GetStringValue() );
+			if ( pEffect->IsValid() )
+			{
+				Vector vecReflect;
+				const float	flDot = DotProduct( shotDir, tr.plane.normal );
+				VectorMA( shotDir, -2.0f * flDot, tr.plane.normal, vecReflect );
+
+				Vector vecShotBackward;
+				VectorMultiply( shotDir, -1.0f, vecShotBackward );
+
+				const Vector& vecImpactPoint = ( tr.fraction != 1.0f ) ? tr.endpos : vecOrigin;
+				Assert( VectorsAreEqual( vecOrigin, tr.endpos, 1e-1 ) );
+
+				SetImpactControlPoint( pEffect.GetObject(), 0, vecImpactPoint, tr.plane.normal, tr.m_pEnt );
+				SetImpactControlPoint( pEffect.GetObject(), 1, vecImpactPoint, vecReflect, tr.m_pEnt );
+				SetImpactControlPoint( pEffect.GetObject(), 2, vecImpactPoint, vecShotBackward, tr.m_pEnt );
+				pEffect->SetControlPoint( 3, Vector( 1, 1, 1 ) );
+				if ( pEffect->m_pDef->ReadsControlPoint( 4 ) )
+				{
+					Vector vecColor;
+					GetColorForSurface( &tr, &vecColor );
+					pEffect->SetControlPoint( 4, vecColor );
+				}
+			}
+		}
+	}
 
 	return true;
 }

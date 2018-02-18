@@ -106,6 +106,27 @@ public:
 		m_bPHONG = true;
 #endif
 	}
+private:
+	int m_nPARALLAX_MAPPING;
+#ifdef _DEBUG
+	bool m_bPARALLAX_MAPPING;
+#endif
+public:
+	void SetPARALLAX_MAPPING( int i )
+	{
+		Assert( i >= 0 && i <= 0 );
+		m_nPARALLAX_MAPPING = i;
+#ifdef _DEBUG
+		m_bPARALLAX_MAPPING = true;
+#endif
+	}
+	void SetPARALLAX_MAPPING( bool i )
+	{
+		m_nPARALLAX_MAPPING = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bPARALLAX_MAPPING = true;
+#endif
+	}
 public:
 	lightmappedadv_flashlight_vs20_Static_Index( )
 	{
@@ -129,19 +150,23 @@ public:
 		m_bPHONG = false;
 #endif // _DEBUG
 		m_nPHONG = 0;
+#ifdef _DEBUG
+		m_bPARALLAX_MAPPING = false;
+#endif // _DEBUG
+		m_nPARALLAX_MAPPING = 0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bNORMALMAP && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAIL && m_bPHONG;
+		bool bAllStaticVarsDefined = m_bNORMALMAP && m_bWORLDVERTEXTRANSITION && m_bSEAMLESS && m_bDETAIL && m_bPHONG && m_bPARALLAX_MAPPING;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 2 * m_nNORMALMAP ) + ( 4 * m_nWORLDVERTEXTRANSITION ) + ( 8 * m_nSEAMLESS ) + ( 16 * m_nDETAIL ) + ( 32 * m_nPHONG ) + 0;
+		return ( 2 * m_nNORMALMAP ) + ( 4 * m_nWORLDVERTEXTRANSITION ) + ( 8 * m_nSEAMLESS ) + ( 16 * m_nDETAIL ) + ( 32 * m_nPHONG ) + ( 64 * m_nPARALLAX_MAPPING ) + 0;
 	}
 };
-#define shaderStaticTest_lightmappedadv_flashlight_vs20 vsh_forgot_to_set_static_NORMALMAP + vsh_forgot_to_set_static_WORLDVERTEXTRANSITION + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_DETAIL + vsh_forgot_to_set_static_PHONG + 0
+#define shaderStaticTest_lightmappedadv_flashlight_vs20 vsh_forgot_to_set_static_NORMALMAP + vsh_forgot_to_set_static_WORLDVERTEXTRANSITION + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_DETAIL + vsh_forgot_to_set_static_PHONG + vsh_forgot_to_set_static_PARALLAX_MAPPING + 0
 class lightmappedadv_flashlight_vs20_Dynamic_Index
 {
 private:

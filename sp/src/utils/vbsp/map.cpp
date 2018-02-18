@@ -1697,6 +1697,7 @@ ChunkFileResult_t CMapFile::LoadEntityCallback(CChunkFile *pFile, int nParam)
 
 				VMatrix obbMatrix;
 				obbMatrix.Identity();
+
                 // build transformation matrix (what is needed to turn a [0,0,0] - [1,1,1] cube into this brush)
 				MatrixSetColumn( obbMatrix, 0, x );
 				MatrixSetColumn( obbMatrix, 1, y );
@@ -1704,7 +1705,7 @@ ChunkFileResult_t CMapFile::LoadEntityCallback(CChunkFile *pFile, int nParam)
 				MatrixSetColumn( obbMatrix, 3, corner );
 
                 // find inverse (we need the world to local matrix, "transformationmatrix" is kind of a misnomer)
-				obbMatrix.InverseTR( invObbMatrix );
+				obbMatrix.InverseGeneral( invObbMatrix );
                 break;
             }
 

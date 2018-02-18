@@ -5,10 +5,10 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include <string.h>
-
 #include "cbase.h"
 #include "triggers.h"
+
+#include <string.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -162,10 +162,7 @@ void CColorCorrectionVolume::Spawn( void )
 
 bool CColorCorrectionVolume::PassesTriggerFilters( CBaseEntity *pEntity )
 {
-	if( pEntity == UTIL_GetLocalPlayer() )
-		return true;
-
-	return false;
+	return pEntity && pEntity->IsPlayer();
 }
 
 void CColorCorrectionVolume::StartTouch( CBaseEntity *pEntity )

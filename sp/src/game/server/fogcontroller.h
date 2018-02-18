@@ -13,6 +13,8 @@
 #include "playernet_vars.h"
 #include "igamesystem.h"
 
+bool GetWorldFogParams( CBaseCombatCharacter *character, fogparams_t &fog );
+
 // Spawn Flags
 #define SF_FOG_MASTER		0x0001
 
@@ -51,6 +53,7 @@ public:
 	void InputSetColorSecondaryLerpTo(inputdata_t &data);
 	void InputSetStartDistLerpTo(inputdata_t &data);
 	void InputSetEndDistLerpTo(inputdata_t &data);
+	void InputSetMaxDensityLerpTo(inputdata_t &data);
 
 	void InputStartFogTransition(inputdata_t &data);
 
@@ -93,7 +96,8 @@ public:
 
 private:
 
-	CFogController	*m_pMasterController;
+								   
+	CHandle< CFogController > m_pMasterController;
 };
 
 CFogSystem *FogSystem( void );

@@ -83,7 +83,7 @@
 #include "cmodel.h"
 #include "view.h"
 #include "debugoverlay_shared.h"
-#include "episodic/worldlight.h"
+#include "downfall/worldlight.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"

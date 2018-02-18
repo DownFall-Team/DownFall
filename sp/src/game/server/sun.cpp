@@ -32,6 +32,8 @@ public:
 
 	virtual int UpdateTransmitState();
 
+	bool KeyValue( const char *szKeyName, const char *szValue );
+
 public:
 	CNetworkVector( m_vDirection );
 	
@@ -48,6 +50,12 @@ public:
 	CNetworkVar( bool, m_bOn );
 	CNetworkVar( int, m_nMaterial );
 	CNetworkVar( int, m_nOverlayMaterial );
+	CNetworkVar( byte, m_RayStrength );
+	CNetworkVar( int, m_HorzSize );
+	CNetworkVar( int, m_VertSize );
+	CNetworkVar( int, m_OverlayHorzSize );
+	CNetworkVar( int, m_OverlayVertSize );
+	CNetworkVar( int, m_nLayers );
 	CNetworkVar( float, m_flHDRColorScale );
 };
 
@@ -56,11 +64,17 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CSun, DT_Sun )
 	SendPropInt( SENDINFO(m_clrOverlay), 32, SPROP_UNSIGNED, SendProxy_Color32ToInt ),
 	SendPropVector( SENDINFO(m_vDirection), 0, SPROP_NORMAL ),
 	SendPropInt( SENDINFO(m_bOn), 1, SPROP_UNSIGNED ),
-	SendPropInt( SENDINFO(m_nSize), 10, SPROP_UNSIGNED ),
-	SendPropInt( SENDINFO(m_nOverlaySize), 10, SPROP_UNSIGNED ),
+	//SendPropInt( SENDINFO(m_nSize), 10, SPROP_UNSIGNED ),
+	//SendPropInt( SENDINFO(m_nOverlaySize), 10, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO(m_nMaterial), 32, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO(m_nOverlayMaterial), 32, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO(m_RayStrength), 8, SPROP_UNSIGNED ),
 	SendPropFloat( SENDINFO_NAME( m_flHDRColorScale, HDRColorScale ), 0,	SPROP_NOSCALE,	0.0f,	100.0f ),
+	SendPropInt( SENDINFO( m_HorzSize ), 10, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_VertSize ), 10, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_OverlayHorzSize ), 10, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_OverlayVertSize ), 10, SPROP_UNSIGNED ),
+	SendPropInt( SENDINFO( m_nLayers ), 3, SPROP_UNSIGNED ),
 END_SEND_TABLE()
 
 
@@ -74,11 +88,17 @@ BEGIN_DATADESC( CSun )
 	DEFINE_KEYFIELD( m_bUseAngles, FIELD_INTEGER, "use_angles" ),
 	DEFINE_KEYFIELD( m_flPitch, FIELD_FLOAT, "pitch" ),
 	DEFINE_KEYFIELD( m_flYaw, FIELD_FLOAT, "angle" ),
-	DEFINE_KEYFIELD( m_nSize, FIELD_INTEGER, "size" ),
+	DEFINE_FIELD( m_nSize, FIELD_INTEGER ),
 	DEFINE_KEYFIELD( m_clrOverlay, FIELD_COLOR32, "overlaycolor" ),
-	DEFINE_KEYFIELD( m_nOverlaySize, FIELD_INTEGER, "overlaysize" ),
+	DEFINE_FIELD( m_nOverlaySize, FIELD_INTEGER ),
+	DEFINE_KEYFIELD( m_RayStrength, FIELD_CHARACTER, "raystrength" ),
 	DEFINE_KEYFIELD( m_strMaterial, FIELD_STRING, "material" ),
 	DEFINE_KEYFIELD( m_strOverlayMaterial, FIELD_STRING, "overlaymaterial" ),
+	DEFINE_KEYFIELD( m_nLayers, FIELD_INTEGER, "NumLayers" ),
+	DEFINE_KEYFIELD( m_HorzSize, FIELD_INTEGER, "HorzSize" ),
+	DEFINE_KEYFIELD( m_VertSize, FIELD_INTEGER, "VertSize" ),
+	DEFINE_KEYFIELD( m_OverlayHorzSize, FIELD_INTEGER, "OverlayHorzSize" ),
+	DEFINE_KEYFIELD( m_OverlayVertSize, FIELD_INTEGER, "OverlayVertSize" ),
 	
 	// NOT SAVED
 	// m_nOverlayMaterial
@@ -100,14 +120,20 @@ CSun::CSun()
 	m_bUseAngles = false;
 	m_flPitch = 0;
 	m_flYaw = 0;
-	m_nSize = 16;
+	//m_nSize = 16;
+	m_RayStrength = 1;
+	m_HorzSize = 3200;
+	m_VertSize = 3200;
+	m_nLayers = 1;
 
 	m_bOn = true;
 	AddEFlags( EFL_FORCE_CHECK_TRANSMIT );
 
 	m_strMaterial = NULL_STRING;
 	m_strOverlayMaterial = NULL_STRING;
-	m_nOverlaySize = -1;
+	//m_nOverlaySize = -1;
+	m_OverlayVertSize = -1;
+	m_OverlayHorzSize = -1;
 }
 
 void CSun::Activate()
@@ -132,11 +158,17 @@ void CSun::Activate()
 	}
 
 	// Default behavior
-	if ( m_nOverlaySize == -1 )
-	{
-		m_nOverlaySize = m_nSize;
-	}
+	// if ( m_nOverlaySize == -1 )
+	// {
+		// m_nOverlaySize = m_nSize;
+	// }
 
+	if ( m_OverlayVertSize == -1 )
+		m_OverlayVertSize = m_VertSize;
+
+	if ( m_OverlayHorzSize == -1 )
+		m_OverlayHorzSize = m_HorzSize;
+	
 	// Cache off our image indices
 	if ( m_strMaterial == NULL_STRING )
 	{
@@ -198,6 +230,22 @@ void CSun::InputSetColor( inputdata_t &inputdata )
 int CSun::UpdateTransmitState()
 {
 	return SetTransmitState( FL_EDICT_ALWAYS );
+}
+
+bool CSun::KeyValue( const char* szKeyName, const char* szValue )
+{
+	if ( FStrEq( szKeyName, "size" ) )
+	{
+		m_HorzSize = m_VertSize = Q_atoi( szValue );
+	}
+	else if ( FStrEq( szKeyName, "overlaysize" ) )
+	{
+		m_OverlayHorzSize = m_OverlayVertSize = Q_atoi( szValue );
+	}
+	else
+		return BaseClass::KeyValue( szKeyName, szValue );
+
+	return true;
 }
 
 

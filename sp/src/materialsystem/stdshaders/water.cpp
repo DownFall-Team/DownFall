@@ -56,6 +56,8 @@ BEGIN_VS_SHADER( Water_DX90,
 		SHADER_PARAM( SCROLL1, SHADER_PARAM_TYPE_COLOR, "", "" )
 		SHADER_PARAM( SCROLL2, SHADER_PARAM_TYPE_COLOR, "", "" )
 		SHADER_PARAM( BLURREFRACT, SHADER_PARAM_TYPE_BOOL, "0", "Cause the refraction to be blurry on ps2b hardware" )
+
+		SHADER_PARAM( FLOWMAP, SHADER_PARAM_TYPE_TEXTURE, "", "flowmap" )
 	END_SHADER_PARAMS
 
 	SHADER_INIT_PARAMS()
@@ -133,6 +135,8 @@ BEGIN_VS_SHADER( Water_DX90,
 		{
 			return "Water_DX81";
 		}
+		if ( params[FLOWMAP]->IsDefined() )
+			return "WaterFlow";
 		return 0;
 	}
 
@@ -368,6 +372,11 @@ BEGIN_VS_SHADER( Water_DX90,
 
 			pShaderAPI->SetPixelShaderFogParams( 8 );
 
+			float vEyePos[4];
+			pShaderAPI->GetWorldSpaceCameraPosition( vEyePos );
+			vEyePos[3] = 0.0f;
+			pShaderAPI->SetPixelShaderConstant( 9, vEyePos );
+
 			DECLARE_DYNAMIC_VERTEX_SHADER( water_vs20 );
 			SET_DYNAMIC_VERTEX_SHADER( water_vs20 );
 			
@@ -494,6 +503,11 @@ BEGIN_VS_SHADER( Water_DX90,
 				cheapWaterStartDistance / ( cheapWaterEndDistance - cheapWaterStartDistance ),
 			};
 			pShaderAPI->SetPixelShaderConstant( 1, cheapWaterParams );
+
+			float vEyePos[4];
+			pShaderAPI->GetWorldSpaceCameraPosition( vEyePos );
+			vEyePos[3] = 0.0f;
+			pShaderAPI->SetPixelShaderConstant( 4, vEyePos );
 
 			if( g_pConfig->bShowSpecular )
 			{

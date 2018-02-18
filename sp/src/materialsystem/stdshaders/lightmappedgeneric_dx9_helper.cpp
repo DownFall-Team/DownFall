@@ -24,8 +24,6 @@
 
 ConVar mat_disable_lightwarp( "mat_disable_lightwarp", "0" );
 ConVar mat_disable_fancy_blending( "mat_disable_fancy_blending", "0" );
-ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
-ConVar my_mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
 extern ConVar r_flashlight_version2;
 
 class CLightmappedGeneric_DX9_Context : public CBasePerMaterialContextData
@@ -191,6 +189,7 @@ void DrawLightmappedAdvFlashlight_DX9_Internal( CBaseVSShader *pShader, IMateria
 		SET_STATIC_VERTEX_SHADER_COMBO( SEAMLESS, bSeamless );
 		SET_STATIC_VERTEX_SHADER_COMBO( DETAIL, bDetail );
 		SET_STATIC_VERTEX_SHADER_COMBO( PHONG, bPhong );
+		SET_STATIC_VERTEX_SHADER_COMBO( PARALLAX_MAPPING, 0 );
 		SET_STATIC_VERTEX_SHADER( lightmappedadv_flashlight_vs20 );
 
 		unsigned int flags = VERTEX_POSITION | VERTEX_NORMAL;
@@ -224,6 +223,7 @@ void DrawLightmappedAdvFlashlight_DX9_Internal( CBaseVSShader *pShader, IMateria
 			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, g_pHardwareConfig->GetShadowFilterMode() );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONG, bPhong );
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONGMASK, nPhongMaskVariant );
+			SET_STATIC_PIXEL_SHADER_COMBO( PARALLAX_MAPPING, 0 );
 			SET_STATIC_PIXEL_SHADER( lightmappedadv_flashlight_ps20b );
 		}
 		else
@@ -922,7 +922,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 				SET_STATIC_VERTEX_SHADER_COMBO( BUMPMASK, hasBumpMask );
 
 				bool bReliefMapping = false; //( bumpmap_variant == 2 ) && ( ! bSeamlessMapping );
-				SET_STATIC_VERTEX_SHADER_COMBO( RELIEF_MAPPING, false );//bReliefMapping );
+				SET_STATIC_VERTEX_SHADER_COMBO( PARALLAX_MAPPING, false );//bReliefMapping );
 				SET_STATIC_VERTEX_SHADER_COMBO( SEAMLESS, bSeamlessMapping );
 #ifdef _X360
 				SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT, hasFlashlight);
@@ -948,7 +948,7 @@ void DrawLightmappedGeneric_DX9_Internal(CBaseVSShader *pShader, IMaterialVar** 
 					SET_STATIC_PIXEL_SHADER_COMBO( WARPLIGHTING, hasLightWarpTexture );
 					SET_STATIC_PIXEL_SHADER_COMBO( FANCY_BLENDING, bHasBlendModulateTexture );
 					SET_STATIC_PIXEL_SHADER_COMBO( MASKEDBLENDING, bMaskedBlending);
-					SET_STATIC_PIXEL_SHADER_COMBO( RELIEF_MAPPING, bReliefMapping );
+					SET_STATIC_PIXEL_SHADER_COMBO( PARALLAX_MAPPING, bReliefMapping );
 					SET_STATIC_PIXEL_SHADER_COMBO( SEAMLESS, bSeamlessMapping );
 					SET_STATIC_PIXEL_SHADER_COMBO( OUTLINE, bHasOutline );
 					SET_STATIC_PIXEL_SHADER_COMBO( SOFTEDGES, bHasSoftEdges );

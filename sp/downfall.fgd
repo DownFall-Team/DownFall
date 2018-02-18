@@ -63,7 +63,11 @@
 	volumetricsquality(integer) 	: "Volumetrics quality" : 20 : ""
 	
 	lightcolor(color255)			: "Light Color" : "255 255 255 200" : "Light Color RGB-Intensity"
-	cameraspace(integer)			: "Camera Space" : 0 : "Angles are interpreted as being relative to camera."
+	cameraspace(Choices)			: "Camera Space" : 0 : "Angles are interpreted as being relative to camera." = 
+	[
+		0 : "No"
+		1 : "Yes"
+	]
 	
 	texturename(material)				: "Texture name" : ""
 
@@ -152,4 +156,199 @@
 	// Outputs
 	output OnTurnOn(void)				: "When we're turned on."
 	output OnTurnOff(void)				: "When we're turned off."
+]
+
+@PointClass base(Targetname, DXLevelChoice, Angles) iconsprite("editor/fog_controller.vmt") color(255 255 255) = env_fog_controller : 
+	"An entity that controls the fog and view distance in the map."
+[
+	// Inputs
+	input SetStartDist(float) : "Set the fog start distance."
+	input SetEndDist(float) : "Set the fog end distance."
+	input TurnOn(void) : "Turn the fog on."
+	input TurnOff(void) : "Turn the fog off."
+	input SetColor(color255) : "Set the primary fog color."
+	input SetColorSecondary(color255) : "Set the secondary fog color."
+	input SetFarZ(integer): "Set the far clip plane distance."
+	input SetAngles(string) : "Set the angles to use for the secondary fog direction."
+
+	input SetColorLerpTo(color255) : "Set the primary fog color."
+	input SetColorSecondaryLerpTo(color255) : "Set the secondary fog color."
+	input SetStartDistLerpTo(float) : "Set the fog start distance."
+	input SetEndDistLerpTo(float) : "Set the fog end distance."
+	input StartFogTransition(void) : "Start fog transition."
+
+	// Starting fog parameters for the level. These are selectable per LOD.	
+	fogenable(choices) : "Fog Enable" : 0 = 
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	fogblend(choices) : "Fog Blend" : 0 = 
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+	use_angles(choices) : "Use Angles for Fog Dir" : 0 = 
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	fogcolor(color255) : "Primary Fog Color" : "255 255 255"
+	fogcolor2(color255) : "Secondary Fog Color" : "255 255 255"
+	fogdir(string) : "Primary Fog Direction" : "1 0 0"
+	fogstart(string) : "Fog Start" : "500.0"
+	fogend(string) : "Fog End" : "2000.0"
+	fogmaxdensity(float) : "Fog Max Density [0..1]" : "1"
+
+	foglerptime(float) : "Interpolate time" : "0"
+	
+	farz(string) : "Far Z Clip Plane" : "-1"
+	
+	spawnflags(flags) =
+	[
+		1 : "Master (Has priority if multiple env_fog_controllers exist)" : 0
+	]
+]
+
+@SolidClass base( Targetname, EnableDisable ) = fog_volume : "An entity to control the fog in the map."
+[
+	FogName(target_destination) : "Fog Name" : : "The name of the fog entity associated with this volume."
+	ColorCorrectionName(target_destination) : "ColorCorrection Name" : : "The name of the color_correction entity associated with this volume."
+]
+
+@PointClass base(Targetname, EnableDisable) iconsprite("editor/logic_random_outputs.vmt") = logic_random_outputs :
+	"A message forwarder. Fires up to eight separate outputs, each with a different chance of firing."
+[
+	spawnflags(flags) =
+	[
+		1: "Only trigger once" : 0
+		2: "Allow fast retrigger" : 0
+	]
+	OnTriggerChance1(float) : "OnTrigger1 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger1 output firing when this entity is triggered."
+	OnTriggerChance2(float) : "OnTrigger2 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger2 output firing when this entity is triggered."
+	OnTriggerChance3(float) : "OnTrigger3 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger3 output firing when this entity is triggered."
+	OnTriggerChance4(float) : "OnTrigger4 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger4 output firing when this entity is triggered."
+	OnTriggerChance5(float) : "OnTrigger5 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger5 output firing when this entity is triggered."
+	OnTriggerChance6(float) : "OnTrigger6 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger6 output firing when this entity is triggered."
+	OnTriggerChance7(float) : "OnTrigger7 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger7 output firing when this entity is triggered."
+	OnTriggerChance8(float) : "OnTrigger8 Chance" : "1.0" : "Chance (from 0 to 1) of the OnTrigger8 output firing when this entity is triggered."
+
+	// Inputs
+	input Trigger(void) : "Trigger this entity, causing its OnTrigger outputs to fire if it is enabled."
+	input Toggle(void) : "Toggle this entity between enabled and disabled."
+	input CancelPending(void) : "Cancel any events fired by this entity that are currently pending in the I/O event queue."
+	
+	// Outputs
+	output OnSpawn(void) : "Fired when this entity is spawned. If this entity is set to only trigger once, it will "+
+		"delete itself after firing this output."
+	output OnTrigger1(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger2(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger3(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger4(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger5(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger6(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger7(void) : "This output has a chance to fire when the entity is triggered."
+	output OnTrigger8(void) : "This output has a chance to fire when the entity is triggered."
+]
+
+@PointClass color(0 0 255) size(-1 -1 -64, 1 1 -8) sidelist(sides) iconsprite("editor/env_cubemap.vmt") = env_cubemap : "An entity that creates a sample point for the Cubic Environment Map."
+[
+	cubemapsize(choices) : "Cubemap Size" : 0 =
+	[
+		0 : "Default"
+		1 : "1x1"
+		2 : "2x2"
+		3 : "4x4"
+		4 : "8x8"
+		5 : "16x16"
+		6 : "32x32"
+		7 : "64x64"
+		8 : "128x128"
+		9 : "256x256"
+	]
+	sides(sidelist) : "Brush faces": : "(Optional) Brushes faces to directly attach to the env_cubemap. Press Pick then click on faces in the 3D View to select them. Use CTRL while clicking to add or remove from the selection."
+	parallaxobb(target_destination) : "Cubemap Bounds" : : "(Optional) assigns this cubemap a bounding box for parallax correction (brush entity tied to parallax_obb)."
+]
+
+@SolidClass = parallax_obb
+[
+	targetname(target_source) : "Name" : : "The name that other entities refer to this entity by."
+]
+
+@PointClass base(Targetname, Angles) color(255 0 0) = env_sun : 
+	"An entity to control & draw a sun effect in the sky."
+[
+	target(target_destination) : "Viewer entity" : : "Name of an entity used to determine where the sun is in the skybox. The sun should be lined up on a line from this entity to the env_sun entity."
+	
+	use_angles(choices) : "UseAngles" : 0 : "The old way to orient env_sun is to point it at a target. The new way is to specify the angles. If you use the new way, set this property to YES." = 
+	[
+		0 : "No"
+		1 : "Yes"
+	]
+
+	pitch(integer) : "Pitch" : 0
+
+	rendercolor(color255) : "Sun Color (R G B)" : "100 80 80"
+	overlaycolor(color255) : "Overlay Color (R G B)" : "0 0 0" : "A value of 0 0 0 will act the old way."
+	
+	//size(integer) : "Size" : 16
+	//overlaysize(integer) : "Overlay Size" : -1 : "A value of -1 means the overlay will act the old way."
+	
+	HorzSize(integer) : "Horizontal Size" : 16
+	VertSize(integer) : "Vertical Size" : 16
+	OverlayHorzSize(integer) : "Horizontal Overlay Size" : -1 : "A value of -1 means the overlay will act the old way."
+	OverlayVertSize(integer) : "Vertical Overlay Size" : -1 : "A value of -1 means the overlay will act the old way."
+	NumLayers(integer) : "Layer count" : 1 : "Number of sun layers, max 4"
+	
+	material(sprite) : "Material Name" : "sprites/light_glow02_add_noz" : "Material of the inner glow."
+	overlaymaterial(sprite) : "Overlay Material Name" : "sprites/light_glow02_add_noz" : "Material of the overlay glow."
+
+	HDRColorScale(float) : "HDR color scale." : "1.0" : "float value to multiply sprite color by when running in HDR mode."
+
+	raystrength(choices) : "GodRay intensity" : 1 : "" =
+	[
+		0 : "Low"
+		1 : "Medium"
+		2 : "Normal"
+		3 : "Overbright"
+		4 : "HOLOCAUST"
+	]
+	
+	// Inputs
+	input TurnOn(void) : "Enable sun rendering."
+	input TurnOff(void) : "Disable sun rendering."
+	input SetColor(color255) : "Change the sun's color. Format: <Red 0-255> <Green 0-255> <Blue 0-255>"
+]
+
+@PointClass base(Targetname, EnableDisable) sphere(minfalloff) sphere(maxfalloff) iconsprite("editor/color_correction.vmt") = color_correction : 
+	"An entity to control the color correction in the map."
+[
+	minfalloff(float) : "Lookup Falloff Start Distance" : "0.0"   : "This is the distance to the start of the falloff region (-1 = everywhere)"
+	maxfalloff(float) : "Lookup Falloff End Distance"   : "200.0" : "This is the distance to the end of the falloff region (-1 = everywhere)"
+	maxweight(float)  : "Maximum Weight"				: "1.0"   : "This is the maximum weight for this lookup"
+	filename(string)  : "Lookup Table Filename"			: ""	  : "This is the lookup table filename"
+	fadeInDuration(float)   : "Lookup Fade In Duration"		: "0.0"	  : "Duration of fade in on when enabled."
+	fadeOutDuration(float)   : "Lookup Fade out Duration"		: "0.0"	  : "Dration of fade out on when disabled."
+	
+	spawnflags(flags) =
+	[
+		1 : "Master" : 0
+		2 : "Client-side simulation" : 0
+	]
+		// Inputs
+	input SetFadeInDuration(float) : "Sets the 'fadeInDuration' variable, used to fade cc lookup usage when entity is enabled."
+	input SetFadeOutDuration(float) : "Sets the 'fadeOutDuration' variable, used to fade cc lookup usage when entity is disabled."
+]
+
+//-------------------------------------------------------------------------
+// Color correction volume control
+//-------------------------------------------------------------------------
+
+@SolidClass base(Targetname, EnableDisable ) = color_correction_volume : 
+	"An entity to control the color correction in the map."
+[
+	fadeDuration(float) : "Lookup Fade Duration"  : "10.0" : "This is the duration for the lookup to fade in/out on extry/exit"
+	maxweight(float)    : "Maximum Weight"		  : "1.0"  : "This is the maximum weight for this lookup"
+	filename(string)    : "Lookup Table Filename" : ""     : "This is the lookup table filename"
 ]

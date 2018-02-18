@@ -19,26 +19,26 @@
 //-----------------------------------------------------------------------------
 
 IMPLEMENT_CLIENTCLASS_DT( C_EnvLightProjected, DT_EnvLightProjected, CEnvLightProjected )
-	RecvPropInt(     RECVINFO( m_iEnableShadowRadius ) ),
-	RecvPropVector(  RECVINFO( m_vRadiusOrigin ) ),
-	RecvPropEHandle( RECVINFO( m_hTargetEntity )	),
-	RecvPropBool(	 RECVINFO( m_bState )			),
-	RecvPropBool(    RECVINFO( m_bOnlyDrawIfShadowed ) ),
-	RecvPropFloat(	 RECVINFO( m_flLightFOV )		),
-	RecvPropFloat(	 RECVINFO( m_fLinearAtten )		),
-	RecvPropFloat(	 RECVINFO( m_flFilterSize )		),
-	RecvPropBool(	 RECVINFO( m_bEnableShadows )	),
-	RecvPropBool(	 RECVINFO( m_bLightOnlyTarget ) ),
-	RecvPropBool(	 RECVINFO( m_bLightWorld )		),
-	RecvPropBool(	 RECVINFO( m_bCameraSpace )		),
-	RecvPropVector(	 RECVINFO( m_LinearFloatLightColor )		),
-	RecvPropFloat(	 RECVINFO( m_flAmbient )		),
-	RecvPropString(  RECVINFO( m_SpotlightTextureName ) ),
-	RecvPropString(  RECVINFO( m_szPattern )),
-	RecvPropInt(	 RECVINFO( m_nSpotlightTextureFrame ) ),
-	RecvPropFloat(	 RECVINFO( m_flNearZ )	),
-	RecvPropFloat(	 RECVINFO( m_flFarZ )	),
-	RecvPropInt(	 RECVINFO( m_nShadowQuality )	),
+	RecvPropInt(		RECVINFO( m_iEnableShadowRadius ) ),
+	RecvPropVector(		RECVINFO( m_vRadiusOrigin ) ),
+	RecvPropEHandle(	RECVINFO( m_hTargetEntity ) ),
+	RecvPropBool(		RECVINFO( m_bState ) ),
+	RecvPropBool(		RECVINFO( m_bOnlyDrawIfShadowed ) ),
+	RecvPropFloat(		RECVINFO( m_flLightFOV ) ),
+	RecvPropFloat(		RECVINFO( m_fLinearAtten ) ),
+	RecvPropFloat(		RECVINFO( m_flFilterSize ) ),
+	RecvPropBool(		RECVINFO( m_bEnableShadows ) ),
+	RecvPropBool(		RECVINFO( m_bLightOnlyTarget ) ),
+	RecvPropBool(		RECVINFO( m_bLightWorld ) ),
+	RecvPropBool(		RECVINFO( m_bCameraSpace ) ),
+	RecvPropVector(		RECVINFO( m_LinearFloatLightColor ) ),
+	RecvPropFloat(		RECVINFO( m_flAmbient ) ),
+	RecvPropString(		RECVINFO( m_SpotlightTextureName ) ),
+	RecvPropString(		RECVINFO( m_szPattern ) ),
+	RecvPropInt(		RECVINFO( m_nSpotlightTextureFrame ) ),
+	RecvPropFloat(		RECVINFO( m_flNearZ ) ),
+	RecvPropFloat(		RECVINFO( m_flFarZ ) ),
+	RecvPropInt(		RECVINFO( m_nShadowQuality ) ),
 END_RECV_TABLE()
 
 C_EnvLightProjected::C_EnvLightProjected( void )
@@ -56,7 +56,7 @@ C_EnvLightProjected::~C_EnvLightProjected( void )
 void C_EnvLightProjected::ShutDownLightHandle( void )
 {
 	// Clear out the light
-	if( m_LightHandle != CLIENTSHADOW_INVALID_HANDLE )
+	if ( m_LightHandle != CLIENTSHADOW_INVALID_HANDLE )
 	{
 		g_pClientShadowMgr->DestroyFlashlight( m_LightHandle );
 		m_LightHandle = CLIENTSHADOW_INVALID_HANDLE;
@@ -70,18 +70,18 @@ void C_EnvLightProjected::ShutDownLightHandle( void )
 void C_EnvLightProjected::OnDataChanged( DataUpdateType_t updateType )
 {
 	// Initialising the texture
-	if (updateType == DATA_UPDATE_CREATED)
+	if ( updateType == DATA_UPDATE_CREATED )
 	{
-		DevMsg(2, "C_EnvProjectedTexture::Initialising with %s\n", m_SpotlightTextureName);
-		m_SpotlightTexture.Init(materials->FindTexture(m_SpotlightTextureName, TEXTURE_GROUP_OTHER, false));
+		DevMsg( "C_EnvProjectedTexture::Initialising with %s\n", m_SpotlightTextureName );
+		m_SpotlightTexture.Init( materials->FindTexture( m_SpotlightTextureName, TEXTURE_GROUP_OTHER, false ) );
 	}
 
 	// Texture has changed
-	if (m_SpotlightTexture.IsValid() && Q_strcmp(m_SpotlightTexture->GetName(), m_SpotlightTextureName))
+	if ( m_SpotlightTexture.IsValid() && Q_strcmp( m_SpotlightTexture->GetName(), m_SpotlightTextureName ) )
 	{
-		DevMsg(2, "C_EnvProjectedTexture::Shutting down reference to %s, initialising %s\n", m_SpotlightTexture->GetName(), m_SpotlightTextureName);
-		m_SpotlightTexture.Shutdown(true);
-		m_SpotlightTexture.Init(materials->FindTexture(m_SpotlightTextureName, TEXTURE_GROUP_OTHER, false));
+		DevMsg( "C_EnvProjectedTexture::Shutting down reference to %s, initialising %s\n", m_SpotlightTexture->GetName(), m_SpotlightTextureName );
+		m_SpotlightTexture.Shutdown( true );
+		m_SpotlightTexture.Init( m_SpotlightTextureName, TEXTURE_GROUP_OTHER, false );
 	}
 
 	// Think now
@@ -192,12 +192,22 @@ void C_EnvLightProjected::SetManagerShadowState( bool state )
 	}
 }
 
+static bool IsBBoxVisible( Vector vecExtentsMin, const Vector &vecExtentsMax )
+{
+	// Z position clamped to the min height (but must be less than the max)
+	float flVisibleBBoxMinHeight = Min( vecExtentsMax.z - 1.0f, -FLT_MAX );
+	vecExtentsMin.z = MAX( vecExtentsMin.z, flVisibleBBoxMinHeight );
+
+	// Check if the bbox is in the view
+	return !engine->CullBox( vecExtentsMin, vecExtentsMax );
+}
+
 void C_EnvLightProjected::UpdateLight( bool bForceUpdate )
 {
 	if ( !m_bState )
 		return ShutDownLightHandle();
 
-	if (m_bEnableShadows && !m_bAddedToManager)
+	if ( m_bEnableShadows && !m_bAddedToManager )
 		AddToManager();
 
 	if ( !m_bAddedToManager )
@@ -223,7 +233,7 @@ void C_EnvLightProjected::UpdateLight( bool bForceUpdate )
 			if ( C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer() )
 			{
 				const QAngle playerAngles = pPlayer->GetAbsAngles();
-				
+
 				Vector vPlayerForward, vPlayerRight, vPlayerUp;
 				AngleVectors( playerAngles, &vPlayerForward, &vPlayerRight, &vPlayerUp );
 
@@ -275,7 +285,77 @@ void C_EnvLightProjected::UpdateLight( bool bForceUpdate )
 
 	state.m_flShadowFilterSize = m_flFilterSize;
 
-	if( m_LightHandle == CLIENTSHADOW_INVALID_HANDLE )
+	// get the half-widths of the near and far planes, 
+	// based on the FOV which is in degrees. Remember that
+	// on planet Valve, x is forward, y left, and z up. 
+	const float tanHalfAngle = tan( m_flLightFOV * ( M_PI / 180.0f ) * 0.5f );
+	const float halfWidthNear = tanHalfAngle * m_flNearZ;
+	const float halfWidthFar = tanHalfAngle * m_flFarZ;
+	// now we can build coordinates in local space: the near rectangle is eg 
+	// (0, -halfWidthNear, -halfWidthNear), (0,  halfWidthNear, -halfWidthNear), 
+	// (0,  halfWidthNear,  halfWidthNear), (0, -halfWidthNear,  halfWidthNear)
+
+	const VectorAligned vNearRect[4] = {
+		VectorAligned( m_flNearZ, -halfWidthNear, -halfWidthNear ), VectorAligned( m_flNearZ,  halfWidthNear, -halfWidthNear ),
+		VectorAligned( m_flNearZ,  halfWidthNear,  halfWidthNear ), VectorAligned( m_flNearZ, -halfWidthNear,  halfWidthNear )
+	};
+
+	const VectorAligned vFarRect[4] = {
+		VectorAligned( m_flFarZ, -halfWidthFar, -halfWidthFar ), VectorAligned( m_flFarZ,  halfWidthFar, -halfWidthFar ),
+		VectorAligned( m_flFarZ,  halfWidthFar,  halfWidthFar ), VectorAligned( m_flFarZ, -halfWidthFar,  halfWidthFar )
+	};
+
+	matrix3x4_t matOrientation( vForward, -vRight, vUp, vPos );
+
+	enum
+	{
+		kNEAR = 0,
+		kFAR = 1,
+	};
+	VectorAligned vOutRects[2][4];
+
+	for ( int i = 0; i < 4; ++i )
+	{
+		VectorTransform( vNearRect[i].Base(), matOrientation, vOutRects[0][i].Base() );
+	}
+	for ( int i = 0; i < 4; ++i )
+	{
+		VectorTransform( vFarRect[i].Base(), matOrientation, vOutRects[1][i].Base() );
+	}
+
+	// now take the min and max extents for the bbox, and see if it is visible.
+	Vector mins = static_cast< Vector >( **vOutRects );
+	Vector maxs = static_cast< Vector >( **vOutRects );
+	for ( int i = 1; i < 8; ++i )
+	{
+		VectorMin( mins, *( *vOutRects + i ), mins );
+		VectorMax( maxs, *( *vOutRects + i ), maxs );
+	}
+
+#if 0 //for debugging the visibility frustum we just calculated
+	NDebugOverlay::Triangle( vOutRects[0][0], vOutRects[0][1], vOutRects[0][2], 255, 0, 0, 100, true, 0.0f ); //first tri
+	NDebugOverlay::Triangle( vOutRects[0][2], vOutRects[0][1], vOutRects[0][0], 255, 0, 0, 100, true, 0.0f ); //make it double sided
+	NDebugOverlay::Triangle( vOutRects[0][2], vOutRects[0][3], vOutRects[0][0], 255, 0, 0, 100, true, 0.0f ); //second tri
+	NDebugOverlay::Triangle( vOutRects[0][0], vOutRects[0][3], vOutRects[0][2], 255, 0, 0, 100, true, 0.0f ); //make it double sided
+
+	NDebugOverlay::Triangle( vOutRects[1][0], vOutRects[1][1], vOutRects[1][2], 0, 0, 255, 100, true, 0.0f ); //first tri
+	NDebugOverlay::Triangle( vOutRects[1][2], vOutRects[1][1], vOutRects[1][0], 0, 0, 255, 100, true, 0.0f ); //make it double sided
+	NDebugOverlay::Triangle( vOutRects[1][2], vOutRects[1][3], vOutRects[1][0], 0, 0, 255, 100, true, 0.0f ); //second tri
+	NDebugOverlay::Triangle( vOutRects[1][0], vOutRects[1][3], vOutRects[1][2], 0, 0, 255, 100, true, 0.0f ); //make it double sided
+
+	NDebugOverlay::Box( vec3_origin, mins, maxs, 0, 255, 0, 100, 0.0f );
+#endif
+
+	if ( !IsBBoxVisible( mins, maxs ) )
+	{
+		// Spotlight's extents aren't in view
+		if ( m_LightHandle != CLIENTSHADOW_INVALID_HANDLE )
+			ShutDownLightHandle();
+
+		return;
+	}
+
+	if ( m_LightHandle == CLIENTSHADOW_INVALID_HANDLE )
 	{
 		m_LightHandle = g_pClientShadowMgr->CreateFlashlight( state );
 	}

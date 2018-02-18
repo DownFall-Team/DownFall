@@ -334,7 +334,7 @@ float CalcRangeFogFactorFixedFunction( float3 worldPos, float3 eyePos, float flF
 float CalcRangeFogFactorNonFixedFunction( float3 worldPos, float3 eyePos, float flFogMaxDensity, float flFogEndOverRange, float flFogOORange )
 {
 	float dist = distance( eyePos.xyz, worldPos.xyz );
-	return min( flFogMaxDensity, saturate( flFogEndOverRange + ( dist * flFogOORange ) ) );
+	return min( flFogMaxDensity, saturate( ( dist * flFogOORange ) - flFogEndOverRange ) );
 }
 
 #endif //#ifndef COMMON_FXC_H_

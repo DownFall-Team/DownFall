@@ -491,10 +491,6 @@ BEGIN_VS_SHADER( Teeth_DX9, "Help for Teeth_DX9" )
 			vScreenScale[1] = (float) nHeight / 32.0f;
 			pShaderAPI->SetPixelShaderConstant( PSREG_FLASHLIGHT_SCREEN_SCALE, vScreenScale, 1 );
 
-			float vFlashlightPos[4];
-			pShaderAPI->GetWorldSpaceCameraPosition( vFlashlightPos );
-			pShaderAPI->SetPixelShaderConstant( PSREG_FLASHLIGHT_POSITION_RIM_BOOST, vFlashlightPos, 1 );
-
 			if ( IsX360() )
 			{
 				pShaderAPI->SetBooleanPixelShaderConstant( 0, &flashlightState.m_nShadowQuality, 1 );

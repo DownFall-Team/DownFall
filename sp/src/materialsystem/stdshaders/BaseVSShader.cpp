@@ -47,7 +47,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-static ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
+ConVar mat_fullbright( "mat_fullbright","0", FCVAR_CHEAT );
 
 // These functions are to be called from the shaders.
 

@@ -1,0 +1,39 @@
+// STATIC: "COMBINEMODE"		"0..1"
+// STATIC: "DRAWCOLOR"			"0..1"
+
+#include "common_ps_fxc.h"
+
+sampler src_bg				: register( s0 );
+sampler src_bg2				: register( s1 );
+
+const float4	_g_vColorOverride : register( c0 );
+
+
+struct PS_INPUT
+{
+	float2 vTexCoords			:	TEXCOORD0;
+};
+
+struct PS_OUTPUT
+{
+	float4 vColor0				: COLOR0;
+};
+
+// Entry point
+PS_OUTPUT main( const PS_INPUT In )
+{
+	PS_OUTPUT Out;
+
+//Tony; allow me to use this to draw a fade.
+#if DRAWCOLOR
+	Out.vColor0 = _g_vColorOverride;
+#else
+	Out.vColor0 = tex2D( src_bg, In.vTexCoords );
+#endif
+
+#if COMBINEMODE
+	Out.vColor0.a = min( Out.vColor0.a, floor( tex2D( src_bg2, In.vTexCoords ).a ) );
+#endif
+
+	return Out;
+}

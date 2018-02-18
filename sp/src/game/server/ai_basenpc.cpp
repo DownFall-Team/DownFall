@@ -3222,7 +3222,10 @@ void CAI_BaseNPC::UpdateEfficiency( bool bInPVS )
 				}
 			}
 			
-			iSound = pCurrentSound->NextSound();
+			if ( pCurrentSound )
+				iSound = pCurrentSound->NextSound();
+			else
+				break;
 		}
 	}
 
@@ -3409,7 +3412,10 @@ void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 							break;
 						}
 
-						iSound = pCurrentSound->NextSound();
+						if ( pCurrentSound )
+							iSound = pCurrentSound->NextSound();
+						else
+							break;
 					}
 				}
 			}
@@ -5339,7 +5345,7 @@ bool CAI_BaseNPC::WeaponLOSCondition(const Vector &ownerPos, const Vector &targe
 			}
 		}
 	}
-	return bHaveLOS;
+	return bHaveLOS && !IsHiddenByFog( targetPos );
 }
 
 //-----------------------------------------------------------------------------

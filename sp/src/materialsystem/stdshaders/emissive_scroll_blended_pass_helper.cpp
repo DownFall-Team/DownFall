@@ -144,7 +144,7 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 		pShaderShadow->VertexShaderVertexFormat( flags, nTexCoordCount, NULL, userDataSize );
 
 #ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
+		if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 		{
 			// Vertex Shader
@@ -166,8 +166,10 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 #ifndef _X360
 		else
 		{
+			const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
 			// The vertex shader uses the vertex id stream
-			SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
+			if ( bHasFastVertexTextures )
+				SET_FLAGS2( MATERIAL_VAR2_USES_VERTEXID );
 
 			DECLARE_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
 			SET_STATIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
@@ -196,7 +198,7 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 		pShaderAPI->SetDefaultState();
 
 #ifndef _X360
-		if ( !g_pHardwareConfig->HasFastVertexTextures() )
+		if ( !g_pHardwareConfig->SupportsShaderModel_3_0() )
 #endif
 		{
 			// Set Vertex Shader Combos
@@ -205,7 +207,7 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs20 );
 
-			// Set Vertex Shader Constants 
+			// Set Vertex Shader Constants
 			// None?
 
 			// Set Pixel Shader Combos
@@ -223,12 +225,14 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 #ifndef _X360
 		else
 		{
-			pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
+			const bool bHasFastVertexTextures = g_pHardwareConfig->HasFastVertexTextures();
+			if ( bHasFastVertexTextures )
+				pShader->SetHWMorphVertexShaderState( VERTEX_SHADER_SHADER_SPECIFIC_CONST_6, VERTEX_SHADER_SHADER_SPECIFIC_CONST_7, SHADER_VERTEXTEXTURE_SAMPLER0 );
 
 			// Set Vertex Shader Combos
 			DECLARE_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, pShaderAPI->GetCurrentNumBones() > 0 );
-			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, pShaderAPI->IsHWMorphingEnabled() );
+			SET_DYNAMIC_VERTEX_SHADER_COMBO( MORPHING, bHasFastVertexTextures && pShaderAPI->IsHWMorphingEnabled() );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER( emissive_scroll_blended_pass_vs30 );
 
@@ -242,7 +246,7 @@ void DrawEmissiveScrollBlendedPass( CBaseVSShader *pShader, IMaterialVar** param
 		pShader->BindTexture( SHADER_SAMPLER1, info.m_nFlowTexture );
 		pShader->BindTexture( SHADER_SAMPLER2, info.m_nEmissiveTexture );
 
-		// Set Pixel Shader Constants 
+		// Set Pixel Shader Constants
 		//float vConstZero[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		// This brings in the electricity and the second base texture when the second base texture is present

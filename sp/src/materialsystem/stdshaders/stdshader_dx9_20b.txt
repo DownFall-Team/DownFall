@@ -27,8 +27,8 @@
 // flesh_interior_blended_pass_ps2x.fxc
 // flesh_interior_blended_pass_vs20.fxc
 
-// splinerope_ps2x.fxc
-// splinerope_vs20.fxc
+// cable_ps2x.fxc
+// cable_vs20.fxc
 
 // sprite_ps2x.fxc
 // sprite_vs20.fxc
@@ -40,7 +40,7 @@
 // eye_refract_vs20.fxc
 // eyes_flashlight_ps2x.fxc
 // eyes_flashlight_vs20.fxc
-// eyes_ps2x.fxc
+eyes_ps2x.fxc
 // eyes_vs20.fxc
 
 // refract_ps2x.fxc
@@ -51,10 +51,10 @@
 // WaterCheap_ps2x.fxc
 // WaterCheap_vs20.fxc
 
-light_volumetrics_ps20b.fxc
-light_volumetrics_vs20.fxc
+// light_volumetrics_ps20b.fxc
+// light_volumetrics_vs20.fxc
 
-shadow_ps2x.fxc
-shadow_vs20.fxc
-shadowbuildtexture_ps2x.fxc
-unlitgeneric_vs20.fxc
+// shadow_ps2x.fxc
+// shadow_vs20.fxc
+// shadowbuildtexture_ps2x.fxc
+// unlitgeneric_vs20.fxc

@@ -37,7 +37,6 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CRopeKeyframe, DT_RopeKeyframe )
 	SendPropInt( SENDINFO(m_Slack), 12 ),
 	SendPropInt( SENDINFO(m_RopeLength), 15 ),
 	SendPropInt( SENDINFO(m_fLockedPoints), 4, SPROP_UNSIGNED ),
-	SendPropInt( SENDINFO(m_nChangeCount), 8, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO(m_RopeFlags), ROPE_NUMFLAGS, SPROP_UNSIGNED ),
 	SendPropInt( SENDINFO(m_nSegments), 4, SPROP_UNSIGNED ),
 	SendPropBool( SENDINFO(m_bConstrainBetweenEndpoints) ),
@@ -202,11 +201,10 @@ CRopeKeyframe* CRopeKeyframe::Create(
 	int iEndAttachment,
 	int ropeWidth,
 	const char *pMaterialName,
-	int numSegments,
-	const char *pClassName
+	int numSegments
 	)
 {
-	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( pClassName );
+	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( "keyframe_rope" );
 	if( !pRet )
 		return NULL;
 
@@ -220,7 +218,6 @@ CRopeKeyframe* CRopeKeyframe::Create(
 	pRet->SetMaterial( pMaterialName );
 	pRet->m_Width = ropeWidth;
 	pRet->m_nSegments = clamp( numSegments, 2, ROPE_MAX_SEGMENTS );
-	pRet->Spawn();
 
 	return pRet;
 }
@@ -233,11 +230,10 @@ CRopeKeyframe* CRopeKeyframe::CreateWithSecondPointDetached(
 	int ropeWidth,
 	const char *pMaterialName,
 	int numSegments,
-	bool bInitialHang,
-	const char *pClassName
+	bool bInitialHang
 	)
 {
-	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( pClassName );
+	CRopeKeyframe *pRet = (CRopeKeyframe*)CreateEntityByName( "keyframe_rope" );
 	if( !pRet )
 		return NULL;
 
@@ -607,8 +603,6 @@ bool CRopeKeyframe::Break( void )
 //-----------------------------------------------------------------------------
 void CRopeKeyframe::NotifyPositionChanged( CBaseEntity *pEntity )
 {
-	++m_nChangeCount;
-
 	// Update our bbox?
 	UpdateBBox( false );
 
@@ -730,15 +724,15 @@ bool CRopeKeyframe::KeyValue( const char *szKeyName, const char *szValue )
 		int iShader = atoi( szValue );
 		if ( iShader == 0 )
 		{
-			m_strRopeMaterialModel = MAKE_STRING( "cable/cable.vmt" );
+			m_iRopeMaterialModelIndex = PrecacheModel( "cable/cable.vmt" );
 		}
 		else if ( iShader == 1 )
 		{
-			m_strRopeMaterialModel = MAKE_STRING( "cable/rope.vmt" );
+			m_iRopeMaterialModelIndex = PrecacheModel( "cable/rope.vmt" );
 		}
 		else
 		{
-			m_strRopeMaterialModel = MAKE_STRING( "cable/chain.vmt" );
+			m_iRopeMaterialModelIndex = PrecacheModel( "cable/chain.vmt" );
 		}
 	}
 	else if ( stricmp( szKeyName, "RopeMaterial" ) == 0 )
@@ -772,6 +766,7 @@ void CRopeKeyframe::InputSetScrollSpeed( inputdata_t &inputdata )
 void CRopeKeyframe::SetMaterial( const char *pName )
 {
 	m_strRopeMaterialModel = AllocPooledString( pName );
+	m_iRopeMaterialModelIndex = PrecacheModel( STRING( m_strRopeMaterialModel ) );
 }
 
 int CRopeKeyframe::UpdateTransmitState()
