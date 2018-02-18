@@ -52,6 +52,7 @@ $Project "Server (Downfall)"
 			$File	"downfall\trigger_gunfire.cpp"
 			$File	"downfall\func_train_downfall.h"
 			$File	"downfall\func_train_downfall.cpp"
+			$File	"fogvolume.cpp"
 		}
 
 		$Folder	"HL2 DLL"
