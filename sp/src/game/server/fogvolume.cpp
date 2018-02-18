@@ -65,14 +65,13 @@ CFogVolume *CFogVolume::FindFogVolumeForPosition( const Vector &position )
 			engine->Con_NPrintf( 0, "No Fog Volume found at given position (%f %f %f)", position.x, position.y, position.z );
 		}
 	}
-	
+
 	return fogVolume;
 }
 
 
 //--------------------------------------------------------------------------------------------------------
 CFogVolume::CFogVolume() :
-	BaseClass(),
 	m_bDisabled( false ),
 	m_bInFogVolumesList( false )
 {
