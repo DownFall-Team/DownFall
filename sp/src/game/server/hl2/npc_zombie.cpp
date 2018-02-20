@@ -26,6 +26,9 @@
 
 ConVar	sk_zombie_health( "sk_zombie_health","0");
 
+// Used when only what combine to react to what the spotlight sees
+#define SF_ZOMBIE_RANDOM (1 << 16)
+
 envelopePoint_t envZombieMoanVolumeFast[] =
 {
 	{	7.0f, 7.0f,
@@ -148,6 +151,20 @@ public:
 	void FootscuffSound( bool fRightFoot );
 
 	const char *GetMoanSound( int nSound );
+
+	bool			m_flIsCiv;
+	bool			m_fIsBlueCiv;
+	bool			m_fIsRebelZombie;
+	bool			m_fIsBlueRebelZombie;
+	bool			m_fIsMedicZombie;
+	bool			m_fIsBlueMedicZombie;
+
+	bool			IsCiv() { return m_flIsCiv; }
+	bool			IsBlueCiv() { return m_fIsBlueCiv; }
+	bool			IsRebelZombie() { return m_fIsRebelZombie; }
+	bool			IsBlueRebelZombie() { return m_fIsBlueRebelZombie; }
+	bool			IsMedicZombie() { return m_fIsMedicZombie; }
+	bool			IsBlueMedicZombie() { return m_fIsBlueMedicZombie; }
 	
 public:
 	DEFINE_CUSTOM_AI;
@@ -234,9 +251,66 @@ void CZombie::Precache( void )
 {
 	BaseClass::Precache();
 
-	PrecacheModel( "models/zombie/classic.mdl" );
-	PrecacheModel( "models/zombie/classic_torso.mdl" );
-	PrecacheModel( "models/zombie/classic_legs.mdl" );
+	//Standard
+	PrecacheModel("models/zombie/classic.mdl");
+	PrecacheModel("models/zombie/classic_torso.mdl");
+	PrecacheModel("models/zombie/classic_legs.mdl");
+
+	//Blue Shirt Citizen
+	PrecacheModel("models/zombie/classic_citizen.mdl");
+	PrecacheModel("models/zombie/classic_citizen_torso.mdl");
+	PrecacheModel("models/zombie/classic_citizen_and_refugee_legs.mdl");
+
+	//Green Rebel
+	PrecacheModel("models/Zombie/classic_rebelgreen.mdl");
+	PrecacheModel("models/zombie/classic_rebel_legs.mdl");
+	PrecacheModel("models/zombie/classic_rebelgreen_torso.mdl");
+
+	//Blue Rebel
+	PrecacheModel("models/Zombie/classic_rebelblue.mdl");
+	PrecacheModel("models/zombie/classic_rebelblue_torso.mdl");
+
+	//Grey Medic
+	PrecacheModel("models/zombie/classic_medicgrey.mdl");
+	PrecacheModel("models/zombie/classic_medicgrey_torso.mdl");
+	PrecacheModel("models/zombie/classic_medic_legs.mdl");
+
+	//Blue Medic
+	PrecacheModel("models/zombie/classic_medicblue.mdl");
+	PrecacheModel("models/zombie/classic_medicblue_torso.mdl");
+
+	const char *pModelName = STRING(GetModelName());
+
+	if (!Q_stricmp(pModelName, "models/zombie/classic_rebelgreen.mdl"))
+	{
+		m_fIsRebelZombie = true;
+	}
+	else
+		if (!Q_stricmp(pModelName, "models/zombie/classic_rebelblue.mdl"))
+		{
+			m_fIsBlueRebelZombie = true;
+		}
+	else
+		if (!Q_stricmp(pModelName, "models/zombie/classic_medicgrey.mdl"))
+		{
+			m_fIsMedicZombie = true;
+		}
+		else
+			if (!Q_stricmp(pModelName, "models/zombie/classic_medicblue.mdl"))
+			{
+				m_fIsBlueMedicZombie = true;
+			}
+			else
+		if (!Q_stricmp(pModelName, "models/zombie/classic.mdl"))
+		{
+			m_flIsCiv = true;
+		}
+		else
+			if (!Q_stricmp(pModelName, "models/zombie/classic_citizen.mdl"))
+			{
+				m_fIsBlueCiv = true;
+			}
+
 
 	PrecacheScriptSound( "Zombie.FootstepRight" );
 	PrecacheScriptSound( "Zombie.FootstepLeft" );
@@ -461,16 +535,57 @@ const char *CZombie::GetHeadcrabModel( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-const char *CZombie::GetLegsModel( void )
+const char *CZombie::GetLegsModel(void)
 {
-	return "models/zombie/classic_legs.mdl";
+	if (IsRebelZombie() || IsBlueRebelZombie())
+	{
+		return "models/zombie/classic_rebel_legs.mdl";
+	}
+	else
+		if (IsMedicZombie() || IsBlueMedicZombie())
+		{
+			return "models/zombie/classic_rebel_legs.mdl";
+		}
+		else
+		if (IsBlueCiv())
+		{
+			return	"models/zombie/classic_citizen_and_refugee_legs.mdl";
+		}
+		else
+			return "models/zombie/classic_legs.mdl";
 }
+
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-const char *CZombie::GetTorsoModel( void )
+const char *CZombie::GetTorsoModel(void)
 {
-	return "models/zombie/classic_torso.mdl";
+	if (IsRebelZombie())
+	{
+		return "models/zombie/classic_rebelgreen_torso.mdl";
+	}
+	else
+		if (IsBlueRebelZombie())
+		{
+			return "models/zombie/classic_rebelblue_torso.mdl";
+		}
+		else
+			if (IsMedicZombie())
+			{
+				return	"models/zombie/classic_medicgrey_torso.mdl";
+			}
+			else
+				if (IsBlueMedicZombie())
+				{
+					return	"models/zombie/classic_medicblue_torso.mdl";
+				}
+	else
+		if (IsBlueCiv())
+		{
+			return	"models/zombie/classic_citizen_torso.mdl";
+		}
+		else
+			return "models/zombie/classic_torso.mdl";
 }
 
 
@@ -478,17 +593,102 @@ const char *CZombie::GetTorsoModel( void )
 //---------------------------------------------------------
 void CZombie::SetZombieModel( void )
 {
+
+	if (!GetModelName() || HasSpawnFlags(SF_ZOMBIE_RANDOM))
+	{
+		if (m_fIsTorso == true)
+		{
+			if (random->RandomInt(0, 10) >= 7)
+			{
+				if (random->RandomInt(0, 1) == 1)
+				{
+					SetModel("models/zombie/classic_torso.mdl");
+				}
+				else
+				{
+					SetModel("models/zombie/classic_citizen_torso.mdl");
+				}
+			}
+			else if (random->RandomInt(0, 10) >= 3)
+			{
+				if (random->RandomInt(0, 1) == 1)
+				{
+					SetModel("models/zombie/classic_rebelgreen_torso.mdl");
+				}
+				else
+				{
+					SetModel("models/zombie/classic_rebelblue_torso.mdl");
+				}
+			}
+			else
+			{
+				if (random->RandomInt(0, 1) == 1)
+				{
+					SetModel("models/zombie/classic_medicgrey_torso.mdl");
+				}
+				else
+				{
+					SetModel("models/zombie/classic_medicblue_torso.mdl");
+				}
+			}
+			SetHullType(HULL_TINY);
+		}
+		else
+		{
+			if (random->RandomInt(0, 10) >= 7)
+			{
+				if (random->RandomInt(0, 1) == 1)
+				{
+					SetModel("models/zombie/classic.mdl");
+					m_flIsCiv = true;
+				}
+				else
+				{
+					SetModel("models/zombie/classic_citizen.mdl");
+					m_fIsBlueCiv = true;
+				}
+			}
+			else if (random->RandomInt(0, 10) >= 3)
+			{
+				if (random->RandomInt(0, 1) == 1)
+				{
+					SetModel("models/zombie/classic_rebelgreen.mdl");
+					m_fIsRebelZombie = true;
+				}
+				else
+				{
+					SetModel("models/zombie/classic_rebelblue.mdl");
+					m_fIsBlueRebelZombie = true;
+				}
+			}
+			else
+			{
+				if (random->RandomInt(0, 1) == 1)
+				{
+					SetModel("models/zombie/classic_medicgrey.mdl");
+					m_fIsMedicZombie = true;
+				}
+				else
+				{
+					SetModel("models/zombie/classic_medicblue.mdl");
+					m_fIsBlueMedicZombie = true;
+				}
+			}
+			SetHullType(HULL_HUMAN);
+		}
+	}
+
 	Hull_t lastHull = GetHullType();
 
-	if ( m_fIsTorso )
+	if (m_fIsTorso)
 	{
-		SetModel( "models/zombie/classic_torso.mdl" );
-		SetHullType( HULL_TINY );
+		SetModel(STRING(GetModelName()));
+		SetHullType(HULL_TINY);
 	}
 	else
 	{
-		SetModel( "models/zombie/classic.mdl" );
-		SetHullType( HULL_HUMAN );
+		SetModel(STRING(GetModelName()));
+		SetHullType(HULL_HUMAN);
 	}
 
 	SetBodygroup( ZOMBIE_BODYGROUP_HEADCRAB, !m_fIsHeadless );
