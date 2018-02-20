@@ -150,7 +150,7 @@ ConVar hunter_hate_thrown_striderbusters_tolerance( "hunter_hate_thrown_striderb
 ConVar hunter_seek_thrown_striderbusters_tolerance( "hunter_seek_thrown_striderbusters_tolerance", "400.0" );
 ConVar hunter_retreat_striderbusters( "hunter_retreat_striderbusters", "1", FCVAR_NONE, "If true, the hunter will retreat when a buster is glued to him." );
 
-ConVar hunter_allow_nav_jump( "hunter_allow_nav_jump", "0" );
+ConVar hunter_allow_nav_jump( "hunter_allow_nav_jump", "1" );
 ConVar g_debug_hunter_charge( "g_debug_hunter_charge", "0" );
 
 ConVar hunter_stand_still( "hunter_stand_still", "0" ); // used for debugging, keeps them rooted in place
@@ -1293,7 +1293,7 @@ public:
 	bool			OverrideMoveFacing( const AILocalMoveGoal_t &move, float flInterval );
 	float			MaxYawSpeed();
 	bool			IsJumpLegal(const Vector &startPos, const Vector &apex, const Vector &endPos) const;
-	float			GetJumpGravity() const		{ return 3.0f; }
+	float			GetJumpGravity() const		{ return 4.0f; }
 	bool			ShouldProbeCollideAgainstEntity( CBaseEntity *pEntity );
 	void            TaskFail( AI_TaskFailureCode_t code );
 	void			TaskFail( const char *pszGeneralFailText )	{ TaskFail( MakeFailCode( pszGeneralFailText ) ); }
@@ -5887,6 +5887,11 @@ float CNPC_Hunter::MaxYawSpeed()
 		{
 			return 25;
 		}
+
+		case ACT_JUMP:
+		{
+			return 45;
+		}
 		
 		default:
 		{
@@ -5900,23 +5905,38 @@ float CNPC_Hunter::MaxYawSpeed()
 //-----------------------------------------------------------------------------
 bool CNPC_Hunter::IsJumpLegal(const Vector &startPos, const Vector &apex, const Vector &endPos) const
 {
-	float MAX_JUMP_RISE		= 220.0f;
-	float MAX_JUMP_DISTANCE	= 512.0f;
-	float MAX_JUMP_DROP		= 384.0f;
+	float MAX_JUMP_RISE = 384.0f;
+	float MAX_JUMP_DISTANCE = 512.0f;
+	float MAX_JUMP_DROP = 1200.0f;
+	const float MIN_JUMP_DISTANCE = 256.0f;
 
-	trace_t tr;	
-	UTIL_TraceHull( startPos, startPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr );
-	if ( tr.startsolid )
+
+	//Don't try to jump if my destination is right next to me. 
+	if ((endPos - GetAbsOrigin()).Length() < MIN_JUMP_DISTANCE)
+		return false;
+
+	//If we're jumping up, make sure we're not going bizarrely high up.
+	if (endPos.z - startPos.z > 0)
+	{
+		if ((apex - endPos).Length() > 128.f)
+			return false;
+	}
+
+	trace_t tr;
+	UTIL_TraceHull(startPos, startPos, GetHullMins(), GetHullMaxs(), MASK_NPCSOLID, this, COLLISION_GROUP_NONE, &tr);
+
+	if (tr.startsolid)
 	{
 		// Trying to start a jump in solid! Consider checking for this in CAI_MoveProbe::JumpMoveLimit.
-		Assert( 0 );
+		Assert(0);
 		return false;
 	}
 
-	if ( BaseClass::IsJumpLegal( startPos, apex, endPos, MAX_JUMP_RISE, MAX_JUMP_DROP, MAX_JUMP_DISTANCE ) )
+	if (BaseClass::IsJumpLegal(startPos, apex, endPos, MAX_JUMP_RISE, MAX_JUMP_DROP, MAX_JUMP_DISTANCE))
 	{
 		return true;
 	}
+
 	return false;
 }
 
