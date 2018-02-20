@@ -7,11 +7,11 @@ branches:
 skip_tags: true
 max_jobs: 1
 image: Visual Studio 2015
-clone_folder: c:\build
+clone_folder: C:\projects\downfall
 clone_depth: 1
 
 install:
-  - cd c:\build\sp\src
+  - cd C:\projects\downfall\sp\src
   - devtools\bin\vpc.exe /downfall +game +shaders /mksln game.sln
   - copy game.sln+sln_fix.txt game.sln
 
@@ -26,7 +26,7 @@ build:
 test: off  
   
 after_build:
-  - if exist c:\build\sp\game\downfall\bin\*.pdb del /f c:\build\sp\game\downfall\bin\*.pdb
+  - if exist C:\projects\downfall\sp\game\downfall\bin\*.pdb del /f C:\projects\downfall\sp\game\downfall\bin\*.pdb
   - set APPVEYOR_REPO_COMMIT=%APPVEYOR_REPO_COMMIT:~0,7%
 
 artifacts:
