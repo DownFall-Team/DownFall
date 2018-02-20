@@ -12,13 +12,14 @@
 *.exp
 *.ilk
 *.lastbuildstate
-vc100.pdb
+vc120.pdb
 ipch
 *.sdf
 *.opensdf
 *.idb
 *.vcxproj
 *.sln
+*.filters
 
 # OSX/Linux build products
 *.mak
@@ -29,6 +30,17 @@ obj*/
 !utils/smdlexp/smdlexp.mak
 
 # Specific Source build products
+
+mathlib.lib
+tier1.lib
+vgui_controls.lib
+raytrace.lib
+
+mathlib.a
+tier1.a
+vgui_controls.a
+raytrace.a
+
 client.pdb
 client.dll
 client.lib
@@ -54,7 +66,7 @@ config.cfg
 # shader files
 *.tmp
 
-*.filters
+*.sentinel
 *.vpc_crc
 /sp/src/game/client/Debug_downfall
 /sp/src/game/server/Debug_downfall
