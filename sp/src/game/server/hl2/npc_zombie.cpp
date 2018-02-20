@@ -598,7 +598,7 @@ void CZombie::SetZombieModel( void )
 	{
 		if (m_fIsTorso == true)
 		{
-			if (random->RandomInt(0, 10) >= 7)
+			if (random->RandomInt(0, 10) <= 5)
 			{
 				if (random->RandomInt(0, 1) == 1)
 				{
@@ -609,7 +609,7 @@ void CZombie::SetZombieModel( void )
 					SetModel("models/zombie/classic_citizen_torso.mdl");
 				}
 			}
-			else if (random->RandomInt(0, 10) >= 3)
+			else if (random->RandomInt(0, 10) <= 9)
 			{
 				if (random->RandomInt(0, 1) == 1)
 				{
@@ -635,7 +635,7 @@ void CZombie::SetZombieModel( void )
 		}
 		else
 		{
-			if (random->RandomInt(0, 10) >= 7)
+			if (random->RandomInt(0, 10) <= 5)
 			{
 				if (random->RandomInt(0, 1) == 1)
 				{
@@ -648,7 +648,7 @@ void CZombie::SetZombieModel( void )
 					m_fIsBlueCiv = true;
 				}
 			}
-			else if (random->RandomInt(0, 10) >= 3)
+			else if (random->RandomInt(0, 10) <= 9)
 			{
 				if (random->RandomInt(0, 1) == 1)
 				{
