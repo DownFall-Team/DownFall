@@ -7,54 +7,54 @@
 //	    _vs20.vcs
 //
 
-// lightmappedgeneric_ps2x.fxc
-// lightmappedgeneric_vs20.fxc
-// lightmappedadv_flashlight_ps2x.fxc
-// lightmappedadv_flashlight_vs20.fxc
+lightmappedgeneric_ps2x.fxc
+lightmappedgeneric_vs20.fxc
+lightmappedadv_flashlight_ps2x.fxc
+lightmappedadv_flashlight_vs20.fxc
 
-// vertexlit_and_unlit_generic_bump_ps2x.fxc
-// vertexlit_and_unlit_generic_bump_vs20.fxc
-// vertexlit_and_unlit_generic_ps2x.fxc
-// vertexlit_and_unlit_generic_vs20.fxc
+vertexlit_and_unlit_generic_bump_ps2x.fxc
+vertexlit_and_unlit_generic_bump_vs20.fxc
+vertexlit_and_unlit_generic_ps2x.fxc
+vertexlit_and_unlit_generic_vs20.fxc
 
-// skin_ps20b.fxc
-// skin_vs20.fxc
+skin_ps20b.fxc
+skin_vs20.fxc
 
-// cloak_blended_pass_ps2x.fxc
-// cloak_blended_pass_vs20.fxc
-// emissive_scroll_blended_pass_ps2x.fxc
-// emissive_scroll_blended_pass_vs20.fxc
-// flesh_interior_blended_pass_ps2x.fxc
-// flesh_interior_blended_pass_vs20.fxc
+cloak_blended_pass_ps2x.fxc
+cloak_blended_pass_vs20.fxc
+emissive_scroll_blended_pass_ps2x.fxc
+emissive_scroll_blended_pass_vs20.fxc
+flesh_interior_blended_pass_ps2x.fxc
+flesh_interior_blended_pass_vs20.fxc
 
-// cable_ps2x.fxc
-// cable_vs20.fxc
+cable_ps2x.fxc
+cable_vs20.fxc
 
-// sprite_ps2x.fxc
-// sprite_vs20.fxc
+sprite_ps2x.fxc
+sprite_vs20.fxc
 
-// depthwrite_ps2x.fxc
-// depthwrite_vs20.fxc
+depthwrite_ps2x.fxc
+depthwrite_vs20.fxc
 
-// eye_refract_ps2x.fxc
-// eye_refract_vs20.fxc
-// eyes_flashlight_ps2x.fxc
-// eyes_flashlight_vs20.fxc
+eye_refract_ps2x.fxc
+eye_refract_vs20.fxc
+eyes_flashlight_ps2x.fxc
+eyes_flashlight_vs20.fxc
 eyes_ps2x.fxc
-// eyes_vs20.fxc
+eyes_vs20.fxc
 
-// refract_ps2x.fxc
-// refract_vs20.fxc
+refract_ps2x.fxc
+refract_vs20.fxc
 
-// water_ps2x.fxc
-// water_vs20.fxc
-// WaterCheap_ps2x.fxc
-// WaterCheap_vs20.fxc
+water_ps2x.fxc
+water_vs20.fxc
+WaterCheap_ps2x.fxc
+WaterCheap_vs20.fxc
 
-// light_volumetrics_ps20b.fxc
-// light_volumetrics_vs20.fxc
+light_volumetrics_ps20b.fxc
+light_volumetrics_vs20.fxc
 
-// shadow_ps2x.fxc
-// shadow_vs20.fxc
-// shadowbuildtexture_ps2x.fxc
-// unlitgeneric_vs20.fxc
+shadow_ps2x.fxc
+shadow_vs20.fxc
+shadowbuildtexture_ps2x.fxc
+unlitgeneric_vs20.fxc

@@ -1,0 +1,41 @@
+//-----------------------------------------------------------------------------
+//	game_shader_dx9.vpc
+//
+//	Project Script for mods to use an an example of how to override shaders
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME "downfall"
+$Include "$SRCDIR\materialsystem\stdshaders\game_shader_dx9_base.vpc"
+
+$Project "Shaders (Downfall)"
+{
+	$Folder	"Source Files"
+	{
+		$File	"cable_dx9.cpp"
+		$File	"cloak_blended_pass_helper.cpp"
+		$File	"depthwrite.cpp"
+		$File	"emissive_scroll_blended_pass_helper.cpp"
+		$File	"eye_refract.cpp"
+		$File	"eye_refract_helper.cpp"
+		$File	"eyes_dx8_dx9_helper.cpp"
+		$File	"eyes_dx9.cpp"
+		$File	"flesh_interior_blended_pass_helper.cpp"
+		$File	"light_volumetrics.cpp"
+		$File	"lightmappedgeneric_dx9.cpp"
+		$File	"lightmappedgeneric_dx9_helper.cpp"
+		$File	"refract.cpp"
+		$File	"refract_dx9_helper.cpp"
+		$File	"shadow.cpp"
+		$File	"shadowbuild_dx9.cpp"
+		$File	"skin_dx9_helper.cpp"
+		$File	"skymask.cpp"
+		$File	"ss_sunrays.cpp"
+		$File	"unlitgeneric_dx9.cpp"
+		$File	"vertexlitgeneric_dx9.cpp"
+		$File	"vertexlitgeneric_dx9_helper.cpp"
+		$File	"water.cpp"
+		$File	"water_flow.cpp"
+		$File	"worldvertextransition.cpp"
+	}
+}

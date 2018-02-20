@@ -1,1 +1,1 @@
-devtools\bin\vpc.exe /downfall +game /mksln games.sln
+devtools\bin\vpc.exe /downfall +game +shaders /mksln games.sln
