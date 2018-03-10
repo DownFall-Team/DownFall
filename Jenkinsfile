@@ -3,7 +3,7 @@ pipeline {
   stages {
 
     stage('Generate VPC') {
-      parallel(
+      parallel {
 
         stage('Generate VPC on Windows') {
           agent { label "windows" }
@@ -20,11 +20,11 @@ pipeline {
           }
         }
 
-      )
+      }
     }
 
     stage('Build All Projects') {
-      parallel(
+      parallel {
 
         stage('Build All on Windows') {
           agent { label "windows" }
@@ -42,12 +42,12 @@ pipeline {
           }
         }
 
-      )
+      }
     }
 
     stage('Get Artifacts')
     {
-      parallel(
+      parallel {
 
         stage('Get Windows Artifacts')
         {
@@ -65,7 +65,7 @@ pipeline {
           }
         }
 
-      )
+      }
     }
 
   }
