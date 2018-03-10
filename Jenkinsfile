@@ -3,9 +3,7 @@ pipeline {
 	stages {
 
 		stage("Build Source") {
-			parallel {
-
-				stage('Windows') {
+			parallel 'Windows'{
 					agent { label "windows" }
 
 					stage('Generate VPC on Windows') {
@@ -33,9 +31,8 @@ pipeline {
 						}
 					}
 
-				}
+				}, 'Linux': {
 
-				stage('Linux') {
 					agent { label "linux" }
 
 					stage('Generate VPC on Linux') {
