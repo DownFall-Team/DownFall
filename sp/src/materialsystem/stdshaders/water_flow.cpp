@@ -12,9 +12,9 @@
 #include "cpp_shader_constant_register_map.h"
 #include "commandbuilder.h"
 
-#include "watercheap_flow_vs20.inc"
-#include "watercheap_flow_ps20.inc"
-#include "watercheap_flow_ps20b.inc"
+#include "WaterCheap_flow_vs20.inc"
+#include "WaterCheap_flow_ps20.inc"
+#include "WaterCheap_flow_ps20b.inc"
 #include "water_flow_vs20.inc"
 #include "water_flow_ps20.inc"
 #include "water_flow_ps20b.inc"
