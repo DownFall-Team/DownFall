@@ -7,7 +7,9 @@ pipeline {
 
 				stage('Build for Windows') {
 
-					agent { label: 'windows' }
+					agent { 
+						label: 'windows' 
+					}
 
 					stage('Generate VPC on Windows') {
 						steps {
@@ -38,7 +40,9 @@ pipeline {
 
 				stage('Build for Linux') {
 
-					agent { label: 'linux' }
+					agent { 
+						label: 'linux' 
+					}
 
 					stage('Generate VPC on Linux') {
 						steps {
