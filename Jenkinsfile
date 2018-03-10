@@ -55,7 +55,7 @@ stage ('Build Downfall') {
 
 			stage('Get Artifacts on Windows')
 			{
-				archiveArtifacts(artifacts: GameBinFolder, onlyIfSuccessful: true)
+				archiveArtifacts(artifacts: "${GameBinFolder}/*.bin", onlyIfSuccessful: true)
 			}
 		}
 	}
