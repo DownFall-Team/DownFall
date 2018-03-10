@@ -1,4 +1,4 @@
-#include "basevsshader.h"
+#include "BaseVSShader.h"
 
 #include "sunrays_calc_vs20.inc"
 #include "sunrays_calc_ps20b.inc"
