@@ -13,8 +13,8 @@
 #include "WaterCheap_vs20.inc"
 #include "WaterCheap_ps20.inc"
 #include "WaterCheap_ps20b.inc"
-#include "Water_vs20.inc"
-#include "Water_ps20.inc"
+#include "water_vs20.inc"
+#include "water_ps20.inc"
 #include "water_ps20b.inc"
 
 #ifndef _X360

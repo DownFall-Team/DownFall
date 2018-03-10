@@ -8,7 +8,7 @@
 
 
 #include "cbase.h"
-#include "screenspaceeffects.h"
+#include "ScreenSpaceEffects.h"
 #include "rendertexture.h"
 #include "model_types.h"
 #include "materialsystem/imaterialsystemhardwareconfig.h"
