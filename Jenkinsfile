@@ -7,13 +7,13 @@ stage ('Build Downfall') {
 
 			stage('Generate VPC on Linux') {
 				dir ('sp/src') {
-					sh './createallprojects'
+					sh './creategameprojects'
 				}
 			}
 
 			stage('Compile on Linux') {
 				dir ('sp/src') {
-					sh '/valve/steam-runtime/shell.sh --arch=i386 make -f everything.mak'
+					sh '/valve/steam-runtime/shell.sh --arch=i386 make -f games.mak'
 				}
 			}
 
@@ -30,8 +30,8 @@ stage ('Build Downfall') {
 
 			stage('Generate VPC on Windows') {
 					dir ('sp/src') {
-						bat 'createallprojects.bat'
-						bat 'copy everything.sln+sln_fix_everything.txt everything.sln'
+						bat 'creategameprojects.bat'
+						bat 'copy everything.sln+sln_fix.txt game.sln'
 				}
 			}
 
