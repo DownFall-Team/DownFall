@@ -12,7 +12,10 @@ stage ('Build Downfall') {
 			}
 
 			stage('Compile on Linux') {
-				sh 'mkdir -p sp\\game\\bin'
+				try {
+					sh 'mkdir -p sp\\game\\bin'
+				} catch {}
+
 				dir ('sp/src') {
 					sh '/valve/steam-runtime/shell.sh --arch=i386 make -f games.mak'
 				}
@@ -37,7 +40,10 @@ stage ('Build Downfall') {
 			}
 
 			stage('Compile on Windows') {
-				bat 'mkdir -p sp\\game\\bin'
+				try {
+					bat 'mkdir -p sp\\game\\bin'
+				} catch {}
+				
 				dir ('sp/src') {
 					bat '''call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
 					msbuild game.sln /t:Build /p:Configuration=Release /m:4'''
