@@ -1,4 +1,4 @@
-#include "basevsshader.h"
+#include "BaseVSShader.h"
 
 #include "skymask_vs20.inc"
 #include "skymask_ps20b.inc"

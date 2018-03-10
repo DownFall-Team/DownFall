@@ -4287,7 +4287,7 @@ void CClientShadowMgr::UpdateShadowDirectionFromLocalLightSource( ClientShadowHa
 	Assert( pRenderable );
 	if ( !pRenderable )
 	{
-		DevWarning( __FUNCTION__"(): Skipping shadow with invalid client renderable (shadow handle %d)\n", shadowHandle );
+		//DevWarning( __FUNCTION__"(): Skipping shadow with invalid client renderable (shadow handle %d)\n", shadowHandle );
 		return;
 	}
 
