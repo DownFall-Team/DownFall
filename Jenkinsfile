@@ -1,6 +1,10 @@
 stage ('Build Downfall') {
 	parallel "Linux": {
 		node ('linux') {
+			stage('Git') {
+				git url: 'git@github.com:DownFall-Team/DownFall.git'
+			}
+
 			stage('Generate VPC on Linux') {
 				dir ('sp/src') {
 					sh './createallprojects'
@@ -20,6 +24,10 @@ stage ('Build Downfall') {
 	},
 	"Windows": {
 		node ('windows') {
+			stage('Git') {
+				git url: 'git@github.com:DownFall-Team/DownFall.git'
+			}
+
 			stage('Generate VPC on Windows') {
 					dir ('sp/src') {
 						bat 'createallprojects.bat'
