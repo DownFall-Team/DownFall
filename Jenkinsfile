@@ -27,7 +27,7 @@ stage ('Build Downfall') {
 			}
 
 			stage('Get Artifacts on Linux') {
-				archiveArtifacts(artifacts: GameBinFolder, onlyIfSuccessful: true)
+				archiveArtifacts(artifacts: "${GameBinFolder}/*.so", onlyIfSuccessful: true)
 			}
 		}
 	},
