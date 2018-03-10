@@ -5,7 +5,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "basevsshader.h"
+#include "BaseVSShader.h"
 #include "mathlib/vmatrix.h"
 #include "common_hlsl_cpp_consts.h" // hack hack hack!
 #include "convar.h"
