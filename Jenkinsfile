@@ -31,7 +31,7 @@ stage ('Build Downfall') {
 			stage('Generate VPC on Windows') {
 					dir ('sp/src') {
 						bat 'creategameprojects.bat'
-						bat 'copy everything.sln+sln_fix.txt game.sln'
+						bat 'copy game.sln+sln_fix.txt game.sln'
 				}
 			}
 
