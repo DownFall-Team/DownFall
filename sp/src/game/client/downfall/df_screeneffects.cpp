@@ -17,7 +17,7 @@
 #include "cdll_client_int.h"
 #include "materialsystem/itexture.h"
 #include "KeyValues.h"
-#include "ClientEffectPrecacheSystem.h"
+#include "clienteffectprecachesystem.h"
 #include "viewrender.h"
 #include "view_scene.h"
 #include "c_basehlplayer.h"
