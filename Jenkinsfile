@@ -16,7 +16,8 @@ pipeline {
         stage('Generate VPC on Linux') {
           agent { label "linux" }
           steps {
-            sh 'sp/src/createallprojects'
+            dir 'sp/src'
+            sh './createallprojects'
           }
         }
 
