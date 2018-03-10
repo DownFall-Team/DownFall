@@ -12,9 +12,7 @@ stage ('Build Downfall') {
 			}
 
 			stage('Compile on Linux') {
-				try {
-					sh 'mkdir -p sp\\game\\bin'
-				} catch (error) {}
+				sh 'if [ -d /the/dir ]; then echo "Dir already exists..."; else mkdir -p sp\\game\\bin; fi'
 
 				dir ('sp/src') {
 					sh '/valve/steam-runtime/shell.sh --arch=i386 make -f games.mak'
@@ -40,9 +38,7 @@ stage ('Build Downfall') {
 			}
 
 			stage('Compile on Windows') {
-				try {
-					bat 'mkdir -p sp\\game\\bin'
-				} catch (error) {}
+				bat 'if not exist sp\\game\\bin (mkdir -p sp\\game\\bin)'
 				
 				dir ('sp/src') {
 					bat '''call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
