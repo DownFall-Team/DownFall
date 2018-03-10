@@ -8,16 +8,18 @@ pipeline {
         stage('Generate VPC on Windows') {
           agent { label "windows" }
           steps {
-            dir 'sp/src'
-            bat 'createallprojects.bat'
+            dir ('sp/src') {
+              bat 'createallprojects.bat'
+            }
           }
         }
 
         stage('Generate VPC on Linux') {
           agent { label "linux" }
           steps {
-            dir 'sp/src'
-            sh './createallprojects'
+            dir ('sp/src') {
+              sh './createallprojects'
+            }
           }
         }
 
@@ -30,16 +32,18 @@ pipeline {
         stage('Build All on Windows') {
           agent { label "windows" }
           steps {
-            dir 'sp/src'
-            bat '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\IDE\\devenv.exe" everything.sln /build Release'
+            dir ('sp/src') {
+              bat '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\IDE\\devenv.exe" everything.sln /build Release'
+            }
           }
         }
 
         stage('Build All on Linux') {
           agent { label "linux" }
           steps {
-            sh '''cd sp/src
-                  /valve/steam-runtime/shell.sh --arch=i386 make -f everything.mak'''
+            dir ('sp/src') {
+              sh '/valve/steam-runtime/shell.sh --arch=i386 make -f everything.mak'
+            }
           }
         }
 
