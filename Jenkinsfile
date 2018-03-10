@@ -29,7 +29,7 @@ stage ('Build Downfall') {
 			stage('Compile on Windows') {
 				dir ('sp/src') {
 					bat '''call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-					copy everything.sln+sln_fix_everything.txt everything.txt
+					copy everything.sln+sln_fix_everything.txt everything.sln
 					msbuild everything.sln /t:Build /p:Configuration=Release /m:4'''
 				}
 			}
