@@ -9,8 +9,7 @@ pipeline {
     stage('Build All Projects') {
       steps {
         sh '''cd sp/src
-/valve/steam-runtime/shell.sh --arch=i386
-make -f everything.mak'''
+/valve/steam-runtime/shell.sh --arch=i386 make -f everything.mak'''
       }
     }
     stage('Get Artifacts') {
