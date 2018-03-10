@@ -33,7 +33,9 @@ pipeline {
           agent { label "windows" }
           steps {
             dir ('sp/src') {
-              bat '"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\IDE\\devenv.exe" everything.sln /build Release'
+              bat '''"
+              call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat"
+              msbuild everything.sln /t:Build /p:Configuration=Release /m:6'''
             }
           }
         }
