@@ -34,7 +34,7 @@ pipeline {
           steps {
             dir ('sp/src') {
               bat '''"
-              call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\Tools\VsDevCmd.bat"
+              call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
               msbuild everything.sln /t:Build /p:Configuration=Release /m:6'''
             }
           }
