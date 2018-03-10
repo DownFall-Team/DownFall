@@ -2,11 +2,11 @@ pipeline {
   agent none
   stages {
 
-    stage('Generate VPC') {
-      parallel {
+    parallel {
+      stage('Windows') {
+        agent { label "windows" }
 
         stage('Generate VPC on Windows') {
-          agent { label "windows" }
           steps {
             dir ('sp/src') {
               bat 'createallprojects.bat'
@@ -14,23 +14,7 @@ pipeline {
           }
         }
 
-        stage('Generate VPC on Linux') {
-          agent { label "linux" }
-          steps {
-            dir ('sp/src') {
-              sh './createallprojects'
-            }
-          }
-        }
-
-      }
-    }
-
-    stage('Build All Projects') {
-      parallel {
-
         stage('Build All on Windows') {
-          agent { label "windows" }
           steps {
             dir ('sp/src') {
               bat '''"
@@ -40,8 +24,27 @@ pipeline {
           }
         }
 
+        stage('Get Artifacts on Windows')
+        {
+          steps {
+            archiveArtifacts(artifacts: 'sp/game/downfall/bin', onlyIfSuccessful: true)
+          }
+        }
+
+      }
+
+      stage('Linux') {
+        agent { label "linux" }
+
+        stage('Generate VPC on Linux') {
+          steps {
+            dir ('sp/src') {
+              sh './createallprojects'
+            }
+          }
+        }
+
         stage('Build All on Linux') {
-          agent { label "linux" }
           steps {
             dir ('sp/src') {
               sh '/valve/steam-runtime/shell.sh --arch=i386 make -f everything.mak'
@@ -49,24 +52,8 @@ pipeline {
           }
         }
 
-      }
-    }
-
-    stage('Get Artifacts')
-    {
-      parallel {
-
-        stage('Get Windows Artifacts')
+        stage('Get Artifacts on Linux')
         {
-          agent { label "windows" }
-          steps {
-            archiveArtifacts(artifacts: 'sp/game/downfall/bin', onlyIfSuccessful: true)
-          }
-        }
-
-        stage('Get Linux Artifacts')
-        {
-          agent { label "linux" }
           steps {
             archiveArtifacts(artifacts: 'sp/game/downfall/bin', onlyIfSuccessful: true)
           }
@@ -74,6 +61,5 @@ pipeline {
 
       }
     }
-
   }
 }
