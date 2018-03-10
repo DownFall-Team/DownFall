@@ -2,7 +2,7 @@ stage ('Build Downfall') {
 	parallel "Linux": {
 		node ('linux') {
 			stage('Git') {
-				git url: 'git@github.com:DownFall-Team/DownFall.git'
+				git url: 'https://github.com/DownFall-Team/DownFall.git'
 			}
 
 			stage('Generate VPC on Linux') {
@@ -25,7 +25,7 @@ stage ('Build Downfall') {
 	"Windows": {
 		node ('windows') {
 			stage('Git') {
-				git url: 'git@github.com:DownFall-Team/DownFall.git'
+				git url: 'https://github.com/DownFall-Team/DownFall.git'
 			}
 
 			stage('Generate VPC on Windows') {
